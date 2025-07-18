@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PersonalInfoBar from "../components/PersonalInfoBar";
 import "./FormPage.css";
 import { data } from "./data";  // ← Veriyi getir
+import Chatbot from "../components/Chatbot";
 
 
 
@@ -24,10 +25,11 @@ const FormPage = () => {
   const [totalBilirubin, setTotalBilirubin] = useState(hasta.totalBilirubin);
   const [directBilirubin, setDirectBilirubin] = useState(hasta.directBilirubin);
   const [albumin, setAlbumin] = useState(hasta.albumin);
-  const [inr, setInr] = useState(hasta.inr);
-  const [platelet, setPlatelet] = useState(hasta.platelet);
-  const [ldh, setLdh] = useState(hasta.ldh);
-  const [cbc, setCbc] = useState(hasta.cbc);
+  const [agRatio, setAgRatio] = useState(hasta.agRatio);
+  const [proteins, setProteins] = useState(hasta.Proteins);
+
+
+  
 
 
   // Görsel dosya ve önizleme url
@@ -51,11 +53,13 @@ const FormPage = () => {
     formData.append("ALP", alp || "0");
     formData.append("ALT", alt || "0");
     formData.append("AST", ast || "0");
-
-    // Backend bekliyor, frontend formunda yok, geçici sıfır atıyoruz
-    formData.append("Proteins", "0");
     formData.append("Albumin", albumin || "0");
-    formData.append("AG_Ratio", "0");
+    formData.append("AG_Ratio", agRatio || "0");
+    formData.append("Proteins", proteins || "0");
+
+
+
+    
 
     if (ultrasoundFile) {
       formData.append("image", ultrasoundFile);
@@ -83,9 +87,9 @@ const FormPage = () => {
             ALP: alp,
             ALT: alt,
             AST: ast,
-            Proteins: 0,
+            Proteins:proteins ,
             Albumin: albumin,
-            AG_Ratio: 0,
+            AG_Ratio:agRatio,
           },
           ultrasoundImage: selectedImage,
           prediction: result.clinic_result,
@@ -102,7 +106,8 @@ const FormPage = () => {
   return (
     <div>
       <PersonalInfoBar />
-
+{/* Chatbot component */}
+<Chatbot />
       <div className="formpage-container">
         <div className="formpage-image-section">
           <h2 className="formpage-title">Ultrason Görüntüsü</h2>
@@ -146,10 +151,12 @@ const FormPage = () => {
             <Field label="Total Bilirubin" value={totalBilirubin} onChange={setTotalBilirubin} type="number" />
             <Field label="Direkt Bilirubin" value={directBilirubin} onChange={setDirectBilirubin} type="number" />
             <Field label="Albumin" value={albumin} onChange={setAlbumin} type="number" />
-            <Field label="INR" value={inr} onChange={setInr} type="number" />
-            <Field label="Trombosit (Platelet)" value={platelet} onChange={setPlatelet} type="number" />
-            <Field label="LDH" value={ldh} onChange={setLdh} type="number" />
-            <Field label="Tam Kan Sayımı (CBC)" value={cbc} onChange={setCbc} type="number" />
+            <Field label="A/G Ratio" value={agRatio} onChange={setAgRatio} type="number" />
+            <Field label="Proteins" value={proteins} onChange={setProteins} type="number" />
+
+
+            
+            
           </div>
           <button onClick={handleSubmit} className="formpage-submit-btn">Tahmin Et</button>
         </div>

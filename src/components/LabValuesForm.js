@@ -40,10 +40,7 @@ const LabValuesForm = () => {
         <input type="number" step="0.01" placeholder="Albumin" />
       </div>
 
-      <div style={{ flex: "0 0 48%" }}>
-        <label>INR (International Normalized Ratio)</label>
-        <input type="number" step="0.01" placeholder="INR" />
-      </div>
+      
 
       <div style={{ flex: "0 0 48%" }}>
         <label>Trombosit (Platelet) sayısı</label>
@@ -55,10 +52,7 @@ const LabValuesForm = () => {
         <input type="number" step="0.01" placeholder="LDH" />
       </div>
 
-      <div style={{ flex: "0 0 48%" }}>
-        <label>Tam kan sayımı (CBC)</label>
-        <input type="number" step="1" placeholder="CBC" />
-      </div>
+      
     </div>
   );
 };
