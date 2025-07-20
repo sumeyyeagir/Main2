@@ -2,14 +2,40 @@
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
+  justify-content: space-between;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
 }
 
-.lab-values-form > div {
+.form-field {
   flex: 0 0 48%;
+  display: flex;
+  flex-direction: column;
 }
 
-@media (max-width: 900px) {
-  .lab-values-form > div {
+.form-field label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.form-field input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.form-field input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Responsive görünüm: Ekran küçülünce tüm alanlar %100 genişlikte olsun */
+@media (max-width: 768px) {
+  .form-field {
     flex: 0 0 100%;
   }
 }

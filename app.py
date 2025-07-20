@@ -8,9 +8,9 @@ from PIL import Image
 import requests
 
 # Model yolları
-RF_MODEL_PATH = "/Users/busrainan/Desktop/FibrozisEvreTahmini-master-2/rf_model.pkl"
-SCALER_PATH = "/Users/busrainan/Desktop/FibrozisEvreTahmini-master-2/scaler.pkl"
-CNN_MODEL_PATH = "/Users/busrainan/Desktop/new/Main/cnn_model.h5"
+RF_MODEL_PATH = r"C:\Users\KEVSER\Desktop\aaa\Main\rf_model.pkl"
+SCALER_PATH = r"C:\Users\KEVSER\Desktop\aaa\Main\scaler.pkl"
+CNN_MODEL_PATH = r"C:\Users\KEVSER\Desktop\aaa\Main\cnn_model.h5"
 API_KEY = "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"
 
 class_labels = ['F0', 'F1', 'F2', 'F3', 'F4']

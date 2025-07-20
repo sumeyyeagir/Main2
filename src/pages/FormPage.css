@@ -6,20 +6,41 @@
 
 .formpage-image-section {
   width: 50%;
-  background-color: #f5f5f5;
+  background-color: #ffffff;
   padding: 40px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
+  
 }
 
+
 .formpage-title {
-  font-size: 20px;
-  margin-bottom: 20px;
+  font-size: 24px;
+  margin-bottom: 12px;
   margin-left: 30px;
-  color: #333;
+  color: #213448;
+  font-family: 'Poppins', sans-serif;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 6px;
 }
+
+.formpage-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background-color: #94B4C1;
+  transform: scaleX(1);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+
 
 .formpage-image-box {
   width: 100%;
@@ -27,7 +48,7 @@
   height: 400px;
   border: 2px solid #bbb;
   border-radius: 10px;
-  background-color: #fff;
+  background-color: #d1d7d8;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -57,7 +78,7 @@
 
 .formpage-image-btn {
   padding: 10px 20px;
-  background-color: #2E7D32;
+  background-color: #213448;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -79,7 +100,7 @@
 
 .formpage-fields-row {
   display: flex;
-  gap: 10px;
+  gap: 40px;
   flex-wrap: wrap;
 }
 
@@ -89,7 +110,7 @@
   font-size: 16px;
   border: none;
   border-radius: 6px;
-  background-color: #2E7D32;
+  background-color: #213448;
   color: white;
   cursor: pointer;
 }

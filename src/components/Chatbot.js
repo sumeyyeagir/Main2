@@ -9,7 +9,6 @@ const Chatbot = () => {
 
   const messagesEndRef = useRef(null);
 
-  // Mesajlar değiştikçe scroll otomatik en alta insin
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
@@ -59,7 +58,7 @@ const Chatbot = () => {
           bottom: "32px",
           right: "32px",
           zIndex: 100,
-          background: "rgb(234, 153, 153)",
+          background: "#213448",
           color: "white",
           borderRadius: "50%",
           width: "60px",
@@ -121,12 +120,12 @@ const Chatbot = () => {
               ✖
             </button>
 
-            {/* Mesajların olduğu scrollable alan */}
+            {/* Mesajlar alanı */}
             <div
               ref={messagesEndRef}
               style={{
                 padding: "24px 16px 8px 16px",
-                height: "450px", // sabit yükseklik
+                height: "450px",
                 overflowY: "auto",
                 marginBottom: "16px",
                 border: "1px solid #ddd",
@@ -153,26 +152,43 @@ const Chatbot = () => {
                   style={{
                     display: "flex",
                     justifyContent: msg.sender === "user" ? "flex-end" : "flex-start",
-                    marginBottom: "8px",
+                    marginBottom: "10px",
+                    position: "relative",
                   }}
                 >
                   <div
                     style={{
-                      background: msg.sender === "user" ? "#940606ff" : "#eee",
-                      color: msg.sender === "user" ? "white" : "#333",
-                      borderRadius: "12px",
-                      padding: "8px 12px",
+                      background: msg.sender === "user" ? "#940606" : "#b84949ff",
+                      color: msg.sender === "user" ? "#fff" : "#333",
+                      borderRadius:
+                        msg.sender === "user"
+                          ? "16px 16px 4px 16px"
+                          : "16px 16px 16px 4px",
+                      padding: "10px 14px",
                       maxWidth: "70%",
                       fontSize: "15px",
+                      position: "relative",
+                      boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
                     }}
                   >
                     {msg.text}
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "0px",
+                        left: msg.sender === "user" ? "auto" : "-8px",
+                        right: msg.sender === "user" ? "-8px" : "auto",
+                        width: 0,
+                        height: 0,
+                        
+                      }}
+                    />
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Mesaj giriş alanı */}
+            {/* Giriş alanı */}
             <div
               style={{
                 padding: "12px 16px",
