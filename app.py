@@ -8,10 +8,13 @@ from PIL import Image
 import requests
 
 # Model yolları
+
 RF_MODEL_PATH = r"C:\Users\KEVSER\Desktop\aaa\Main\rf_model.pkl"
 SCALER_PATH = r"C:\Users\KEVSER\Desktop\aaa\Main\scaler.pkl"
 CNN_MODEL_PATH = r"C:\Users\KEVSER\Desktop\aaa\Main\cnn_model.h5"
 API_KEY = "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"
+
+
 
 class_labels = ['F0', 'F1', 'F2', 'F3', 'F4']
 
@@ -43,10 +46,7 @@ def predict():
             float(data["AG_Ratio"])
         ]
 
-        image = request.files.get("image", None)
-        if image is None:
-            return jsonify({"error": "Ultrasound image is required."}), 400
-
+        image = request.files["image"]
         image_path = "temp_image.jpg"
         image.save(image_path)
 
@@ -98,7 +98,6 @@ def predict():
 
         if llm_response.status_code == 200:
             explanation = llm_response.json()["choices"][0]["message"]["content"]
-
         else:
             explanation = "LLM response failed."
 
@@ -108,43 +107,6 @@ def predict():
             "confidence": round(confidence, 2),
             "llm_explanation": explanation
         })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/chat", methods=["POST"])
-def chat():
-    try:
-        data = request.json
-        user_message = data.get("message", "")
-        if not user_message:
-            return jsonify({"error": "Mesaj boş olamaz."}), 400
-
-        prompt = f"""
-        You are a hepatology specialist assistant. Answer the patient's question clearly and professionally.
-
-        Patient's question: {user_message}
-        """
-
-        headers = {
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
-        }
-
-        payload = {
-            "model": "mistralai/mistral-7b-instruct",
-            "messages": [{"role": "user", "content": prompt}]
-        }
-
-        llm_response = requests.post("https://openrouter.ai/api/v1/chat/completions",
-                                     headers=headers, json=payload)
-
-        if llm_response.status_code == 200:
-            answer = llm_response.json()["choices"][0]["message"]["content"]
-        else:
-            return jsonify({"error": "LLM API çağrısı başarısız."}), 500
-
-        return jsonify({"response": answer})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

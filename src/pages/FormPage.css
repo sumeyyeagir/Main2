@@ -74,19 +74,30 @@
   width: 100%;
   display: flex;
   justify-content: center;
+  /* Daha modern görünüm için arka plan veya padding eklemek istersen buraya ekleyebilirsin */
 }
 
 .formpage-image-btn {
-  padding: 10px 20px;
+  padding: 12px 24px;
   background-color: #213448;
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 16px;
+  font-weight: 600;
   margin-top: 30px;
-  margin-right: 90px;
+  /* margin-right kaldırdım çünkü buton ortalanmış durumda */
   cursor: pointer;
+  box-shadow: 0 4px 8px rgba(33, 52, 72, 0.3);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
+
+.formpage-image-btn:hover {
+  background-color: #304a6e;
+  box-shadow: 0 6px 12px rgba(33, 52, 72, 0.5);
+  transform: scale(1.05);
+}
+
 
 .formpage-info-section {
   flex: 1;
@@ -102,18 +113,29 @@
   display: flex;
   gap: 40px;
   flex-wrap: wrap;
+  
 }
 
 .formpage-submit-btn {
   margin-top: 20px;
   padding: 12px 24px;
   font-size: 16px;
+  font-weight: 600;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background-color: #213448;
   color: white;
   cursor: pointer;
+  box-shadow: 0 4px 8px rgba(33, 52, 72, 0.3);
+  transition: all 0.3s ease;
 }
+
+.formpage-submit-btn:hover {
+  background-color: #304a6e;
+  box-shadow: 0 6px 12px rgba(33, 52, 72, 0.5);
+  transform: scale(1.05);
+}
+
 
 @media (max-width: 900px) {
   .formpage-container {

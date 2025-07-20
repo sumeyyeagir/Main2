@@ -6,7 +6,6 @@ const Chatbot = () => {
     { sender: "bot", text: "Merhaba! Size nasıl yardımcı olabilirim?" }
   ]);
   const [chatInput, setChatInput] = useState("");
-
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -17,7 +16,6 @@ const Chatbot = () => {
 
   const handleSendMessage = async () => {
     if (!chatInput.trim()) return;
-
     setChatMessages((prev) => [...prev, { sender: "user", text: chatInput }]);
     const messageToSend = chatInput;
     setChatInput("");
@@ -29,17 +27,17 @@ const Chatbot = () => {
         body: JSON.stringify({ message: messageToSend }),
       });
 
-      if (!response.ok) throw new Error("Chat API çağrısı başarısız.");
-
       const data = await response.json();
-
       if (data.error) {
         setChatMessages((prev) => [
           ...prev,
           { sender: "bot", text: "Üzgünüm, cevap alınamadı: " + data.error },
         ]);
       } else {
-        setChatMessages((prev) => [...prev, { sender: "bot", text: data.response }]);
+        setChatMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: data.response },
+        ]);
       }
     } catch (error) {
       setChatMessages((prev) => [
@@ -51,178 +49,186 @@ const Chatbot = () => {
 
   return (
     <>
-      {/* Chatbot butonu */}
+      {/* Sabit Chatbot Düğmesi */}
       <button
+        onClick={() => setIsChatOpen(true)}
+        title="Chatbot"
         style={{
           position: "fixed",
           bottom: "32px",
           right: "32px",
           zIndex: 100,
-          background: "#213448",
+          background: "#1e293b",
           color: "white",
           borderRadius: "50%",
-          width: "60px",
-          height: "60px",
+          width: "74px",
+          height: "74px",
           fontSize: "28px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
           border: "none",
+          boxShadow: "0 4px 14px rgba(0, 0, 0, 0.68)",
           cursor: "pointer",
+          transition: "all 0.3s",
         }}
-        onClick={() => setIsChatOpen(true)}
-        title="Chatbot"
       >
-        🤖
+        <img src="/images/assistant.png" alt="PDF" style={{ width: '40px', height: '40px', marginTop:"7px",marginLeft:"6px" }} />
       </button>
 
-      {/* Chatbot modal */}
       {isChatOpen && (
         <div
           style={{
             position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
+            inset: 0,
+            background: "rgba(0,0,0,0.3)",
+            backdropFilter: "blur(4px)",
             zIndex: 101,
-            backdropFilter: "blur(6px)",
-            background: "rgba(0,0,0,0.2)",
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
+            alignItems: "center",
           }}
         >
           <div
             style={{
-              background: "white",
-              borderRadius: "16px",
-              boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
-              width: "850px",
-              maxWidth: "90vw",
-              minHeight: "600px",
+              width: "800px",
+              height: "600px",
+              background: "#ffffff",
+              borderRadius: "20px",
               display: "flex",
               flexDirection: "column",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+              overflow: "hidden",
               position: "relative",
             }}
           >
+            {/* Kapat Butonu */}
             <button
+              onClick={() => setIsChatOpen(false)}
               style={{
                 position: "absolute",
-                top: "12px",
-                right: "12px",
+                top: "10px",
+                right: "10px",
                 background: "transparent",
                 border: "none",
-                fontSize: "22px",
+                fontSize: "20px",
                 cursor: "pointer",
+                color: "#fff",
               }}
-              onClick={() => setIsChatOpen(false)}
               title="Kapat"
             >
               ✖
             </button>
 
-            {/* Mesajlar alanı */}
+            {/* Başlık */}
+            <div
+              style={{
+                padding: "20px",
+                fontSize: "25px",
+                fontWeight: "bold",
+                fontFamily: "'Poppins', sans-serif",
+                background: "#1e293b",
+                color: "#fff",
+                textAlign: "center",
+              }}
+            >
+              Sohbet Asistanı
+            </div>
+
+            {/* Mesajlar */}
             <div
               ref={messagesEndRef}
               style={{
-                padding: "24px 16px 8px 16px",
-                height: "450px",
+                flex: 1,
+                padding: "16px",
                 overflowY: "auto",
-                marginBottom: "16px",
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                backgroundColor: "#fafafa",
+                backgroundColor: "#f1f5f9",
               }}
             >
-              <div
-                style={{
-                  textAlign: "center",
-                  marginBottom: "18px",
-                  fontWeight: "bold",
-                  fontSize: "2.2rem",
-                  letterSpacing: "1px",
-                  color: "#940606ff",
-                }}
-              >
-                Sohbet Asistanı
-              </div>
-
               {chatMessages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: "flex",
-                    justifyContent: msg.sender === "user" ? "flex-end" : "flex-start",
-                    marginBottom: "10px",
-                    position: "relative",
-                  }}
-                >
-                  <div
-                    style={{
-                      background: msg.sender === "user" ? "#940606" : "#b84949ff",
-                      color: msg.sender === "user" ? "#fff" : "#333",
-                      borderRadius:
-                        msg.sender === "user"
-                          ? "16px 16px 4px 16px"
-                          : "16px 16px 16px 4px",
-                      padding: "10px 14px",
-                      maxWidth: "70%",
-                      fontSize: "15px",
-                      position: "relative",
-                      boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
-                    }}
-                  >
-                    {msg.text}
-                    <div
-                      style={{
-                        position: "absolute",
-                        bottom: "0px",
-                        left: msg.sender === "user" ? "auto" : "-8px",
-                        right: msg.sender === "user" ? "-8px" : "auto",
-                        width: 0,
-                        height: 0,
-                        
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
+  <div
+    key={idx}
+    style={{
+      display: "flex",
+      flexDirection: msg.sender === "user" ? "row-reverse" : "row",
+      alignItems: "flex-start",
+      marginBottom: "12px",
+    }}
+  >
+    {/* Avatar */}
+    <img
+      src={msg.sender === "user" ? "/images/doctor.png" : "/images/assistant.png"}
+      alt={msg.sender === "user" ? "User" : "Bot"}
+      style={{
+        width: "36px",
+        height: "36px",
+        borderRadius: "50%",
+        objectFit: "cover",
+        marginLeft: msg.sender === "user" ? "12px" : "0",
+        marginRight: msg.sender === "user" ? "0" : "12px",
+      }}
+    />
+
+    {/* Mesaj Kutusu */}
+    <div
+      style={{
+        backgroundColor: msg.sender === "user" ? "#94B4C1" : "#a6a6a8ff",
+        color: msg.sender === "user" ? "#000000ff" : "#000000ff",
+        padding: "10px 14px",
+        borderRadius:
+          msg.sender === "user"
+            ? "18px 18px 0px 18px"
+            : "18px 18px 18px 0px",
+        maxWidth: "75%",
+        fontSize: "15px",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+      }}
+    >
+      {msg.text}
+    </div>
+  </div>
+))}
+
             </div>
 
-            {/* Giriş alanı */}
+            {/* Mesaj Giriş Alanı */}
             <div
               style={{
-                padding: "12px 16px",
-                borderTop: "1px solid #eee",
+                padding: "12px",
+                borderTop: "1px solid #ddd",
                 display: "flex",
+                alignItems: "center",
                 gap: "8px",
+                backgroundColor: "#fff",
               }}
             >
               <input
                 type="text"
+                placeholder="Mesajınızı yazın..."
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSendMessage();
                 }}
-                placeholder="Sorunuzu yazın..."
                 style={{
                   flex: 1,
-                  padding: "8px",
-                  borderRadius: "8px",
+                  padding: "10px",
+                  borderRadius: "10px",
                   border: "1px solid #ccc",
-                  fontSize: "15px",
+                  fontSize: "14px",
+                  outline: "none",
                 }}
               />
               <button
                 onClick={handleSendMessage}
                 style={{
-                  background: "rgb(234, 153, 153)",
-                  color: "white",
+                  padding: "10px 14px",
+                  background: "#1e293b",
+                  color: "#fff",
                   border: "none",
-                  borderRadius: "8px",
-                  padding: "8px 16px",
-                  fontWeight: "bold",
+                  borderRadius: "10px",
                   cursor: "pointer",
+                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
                 }}
               >
                 Gönder
