@@ -5,12 +5,10 @@ const LabValuesForm = () => {
   const fields = [
     { label: "AST (Aspartat Aminotransferaz)", placeholder: "AST değeri" },
     { label: "ALT (Alanin Aminotransferaz)", placeholder: "ALT değeri" },
-    { label: "GGT (Gama Glutamil Transferaz)", placeholder: "GGT değeri" },
     { label: "ALP (Alkalen Fosfataz)", placeholder: "ALP değeri" },
     { label: "Total Bilirubin", placeholder: "Total Bilirubin" },
     { label: "Direkt Bilirubin", placeholder: "Direkt Bilirubin" },
     { label: "Albumin", placeholder: "Albumin" },
-    { label: "Trombosit (Platelet) sayısı", placeholder: "Trombosit sayısı", step: "1" },
     { label: "LDH", placeholder: "LDH" },
   ];
 
@@ -39,10 +37,6 @@ const LabValuesForm = () => {
         <input type="number" step="0.01" placeholder="ALT değeri" />
       </div>
 
-      <div style={{ flex: "0 0 48%" }}>
-        <label>GGT (Gama Glutamil Transferaz)</label>
-        <input type="number" step="0.01" placeholder="GGT değeri" />
-      </div>
 
       <div style={{ flex: "0 0 48%" }}>
         <label>ALP (Alkalen Fosfataz)</label>
@@ -69,10 +63,6 @@ const LabValuesForm = () => {
         <input type="number" step="0.01" placeholder="INR" />
       </div>
 
-      <div style={{ flex: "0 0 48%" }}>
-        <label>Trombosit (Platelet) sayısı</label>
-        <input type="number" step="1" placeholder="Trombosit sayısı" />
-      </div>
 
       <div style={{ flex: "0 0 48%" }}>
         <label>LDH</label>

@@ -4,24 +4,53 @@ import { useNavigate } from "react-router-dom";
 import PersonalInfoBar from "../components/PersonalInfoBar";
 import "./FormPage.css";
 import Chatbot from "../components/Chatbot";
+import LoadingSpinner from "../components/LoadingSpinner";
+// ✅ Field bileşeni component DIŞINA alındı (odak hatasını engeller)
+const Field = ({ label, value, onChange, type = "text" }) => (
+  <div style={{ display: "flex", flexDirection: "column", minWidth: "150px" }}>
+    <label
+      style={{
+        marginBottom: "5px",
+        fontWeight: "bold",
+        fontSize: "15px",
+        color: "#547792",
+        fontFamily: "'Poppins', sans-serif",
+      }}
+    >
+      {label}
+    </label>
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{
+        padding: "8px",
+        borderRadius: "4px",
+        border: "none",
+        boxShadow: "5px 5px 5px rgba(33, 52, 72, 0.51)",
+        fontSize: "14px",
+        width: "150px",
+        outline: "none",
+      }}
+      placeholder={`${label} giriniz`}
+      step={type === "number" ? "0.01" : undefined}
+    />
+  </div>
+);
 
 const FormPage = ({ onLogout }) => {
   const navigate = useNavigate();
 
   // Hasta bilgileri
-
   const [tc, setTc] = useState("");
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
 
-
-
   // Kan değerleri
   const [ast, setAst] = useState("");
   const [alt, setAlt] = useState("");
-  const [ggt, setGgt] = useState("");
   const [alp, setAlp] = useState("");
   const [totalBilirubin, setTotalBilirubin] = useState("");
   const [directBilirubin, setDirectBilirubin] = useState("");
@@ -33,6 +62,9 @@ const FormPage = ({ onLogout }) => {
   const [ultrasoundFile, setUltrasoundFile] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [kanDegeriDosyasi, setKanDegeriDosyasi] = useState(null);
+
+  // Yeni loading state
+  const [loading, setLoading] = useState(false);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -61,13 +93,11 @@ const FormPage = ({ onLogout }) => {
 
         setAst(result.ast || "");
         setAlt(result.alt || "");
-        setGgt(result.ggt || "");
         setAlp(result.alp || "");
         setTotalBilirubin(result.totalBilirubin || "");
         setDirectBilirubin(result.directBilirubin || "");
         setAlbumin(result.albumin || "");
         setPlatelet(result.platelet || "");
-        // Eklenmediyse boş bırakılabilir
       } catch (error) {
         alert("PDF işlenemedi: " + error.message);
       }
@@ -75,6 +105,8 @@ const FormPage = ({ onLogout }) => {
   };
 
   const handleSubmit = async () => {
+    setLoading(true); // Loading başlat
+
     const formData = new FormData();
     formData.append("Total_Bilirubin", totalBilirubin || "0");
     formData.append("Direct_Bilirubin", directBilirubin || "0");
@@ -99,12 +131,15 @@ const FormPage = ({ onLogout }) => {
 
       const result = await response.json();
 
+      setLoading(false); // Loading bitir
+
       navigate("/result", {
         state: {
           tc,
           name,
           surname,
           age,
+          gender,
           labValues: {
             Total_Bilirubin: totalBilirubin,
             Direct_Bilirubin: directBilirubin,
@@ -123,38 +158,14 @@ const FormPage = ({ onLogout }) => {
         },
       });
     } catch (error) {
+      setLoading(false);
       alert("Tahmin sırasında bir hata oluştu: " + error.message);
     }
   };
 
-  const Field = ({ label, value, onChange, type = "text" }) => (
-  <div style={{ display: "flex", flexDirection: "column", minWidth: "150px" }}>
-    <label style={{ marginBottom: "5px", fontWeight: "bold", fontSize: "15px",color:"#547792", fontFamily: "'Poppins', sans-serif"}}>{label}</label>
-    <input
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      style={{
-  padding: "8px",
-  borderRadius: "4px",
-  border: "none",              // Kenarı kaldırdık
-  boxShadow: "5px 5px 5px rgba(33, 52, 72, 0.51)",  // Hafif gölge ekledik
-  fontSize: "14px",
-  width: "150px",
-  outline: "none",            // Focus olduğunda mavi kenar gitmesi için
-}}
-
-      placeholder={`${label} giriniz`}
-
-      step={type === "number" ? "0.01" : undefined}
-    />
-  </div>
-);
-
   return (
     <div>
       <PersonalInfoBar onLogout={onLogout} />
-      {/* Chatbot component */}
       <Chatbot />
 
       <div className="formpage-container">
@@ -168,7 +179,11 @@ const FormPage = ({ onLogout }) => {
             )}
           </div>
           <div className="formpage-image-btn-box">
-            <button onClick={() => document.getElementById("imageUpload").click()} className="formpage-image-btn">
+            <button
+              onClick={() => document.getElementById("imageUpload").click()}
+              className="formpage-image-btn"
+              disabled={loading}
+            >
               {selectedImage ? "Görseli Değiştir" : "Görsel Yükle"}
             </button>
           </div>
@@ -178,6 +193,7 @@ const FormPage = ({ onLogout }) => {
             accept="image/*"
             onChange={handleImageUpload}
             style={{ display: "none" }}
+            disabled={loading}
           />
         </div>
 
@@ -188,74 +204,72 @@ const FormPage = ({ onLogout }) => {
             <Field label="İsim" value={name} onChange={setName} />
             <Field label="Soyisim" value={surname} onChange={setSurname} />
             <Field label="Yaş" value={age} onChange={setAge} type="number" />
-             {/* Yeni: Cinsiyet */}
-  <div style={{ display: "flex", flexDirection: "column", minWidth: "150px" }}>
-  <label
-    style={{
-      marginBottom: "5px",
-      fontWeight: "bold",
-      fontSize: "15px",
-      color: "#547792", // diğer inputlar gibi
-      fontFamily: "Poppins, sans-serif",
-    }}
-  >
-    Cinsiyet
-  </label>
-  <select
-    value={gender}
-    onChange={(e) => setGender(e.target.value)}
-    style={{
-      padding: "8px",
-      borderRadius: "4px",
-      border: "none",
-      boxShadow: "5px 5px 5px rgba(33, 52, 72, 0.51)", // diğer input gibi
-      fontSize: "14px",
-      width: "150px",
-      outline: "none",
-      fontFamily: "Poppins, sans-serif",
-    }}
-  >
-    <option value="">Seçiniz</option>
-    <option value="Kadın">Kadın</option>
-    <option value="Erkek">Erkek</option>
-    <option value="Diğer">Diğer</option>
-  </select>
-</div>
-
+            <div style={{ display: "flex", flexDirection: "column", minWidth: "150px" }}>
+              <label
+                style={{
+                  marginBottom: "5px",
+                  fontWeight: "bold",
+                  fontSize: "15px",
+                  color: "#547792",
+                  fontFamily: "Poppins, sans-serif",
+                }}
+              >
+                Cinsiyet
+              </label>
+              <select
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                style={{
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "none",
+                  boxShadow: "5px 5px 5px rgba(33, 52, 72, 0.51)",
+                  fontSize: "14px",
+                  width: "150px",
+                  outline: "none",
+                  fontFamily: "Poppins, sans-serif",
+                }}
+                disabled={loading}
+              >
+                <option value="">Seçiniz</option>
+                <option value="Kadın">Kadın</option>
+                <option value="Erkek">Erkek</option>
+                <option value="Diğer">Diğer</option>
+              </select>
+            </div>
           </div>
 
           <h2 className="formpage-title">Kan Değerleri</h2>
           <div style={{ marginBottom: "15px" }}>
-                          <button
-                style={{
-                  backgroundColor: "#213448",
-                  color: "white",
-                  padding: "12px 20px",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  boxShadow: "0 4px 8px rgba(33, 52, 72, 0.3)",
-                  transition: "all 0.3s ease",
-                  
-                }}
-                onClick={() => document.getElementById("kanDegeriUpload").click()}
-                onMouseEnter={e => {
-                  e.currentTarget.style.backgroundColor = "#304a6e";
-                  e.currentTarget.style.transform = "scale(1.05)";
-                  e.currentTarget.style.boxShadow = "0 6px 12px rgba(33, 52, 72, 0.5)";
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.backgroundColor = "#213448";
-                  e.currentTarget.style.transform = "scale(1)";
-                  e.currentTarget.style.boxShadow = "0 4px 8px rgba(33, 52, 72, 0.3)";
-                }}
-              >
-                <img src="/images/pdf.png" alt="PDF" style={{ width: '30px', height: '30px', marginRight: '5px' }} />
-                
-                PDF Olarak Yükle
-              </button>
+            <button
+              style={{
+                backgroundColor: "#213448",
+                color: "white",
+                padding: "12px 20px",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "16px",
+                fontWeight: "600",
+                boxShadow: "0 4px 8px rgba(33, 52, 72, 0.3)",
+                transition: "all 0.3s ease",
+              }}
+              onClick={() => document.getElementById("kanDegeriUpload").click()}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#304a6e";
+                e.currentTarget.style.transform = "scale(1.05)";
+                e.currentTarget.style.boxShadow = "0 6px 12px rgba(33, 52, 72, 0.5)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#213448";
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "0 4px 8px rgba(33, 52, 72, 0.3)";
+              }}
+              disabled={loading}
+            >
+              <img src="/images/pdf.png" alt="PDF" style={{ width: "30px", height: "30px", marginRight: "5px" }} />
+              PDF Olarak Yükle
+            </button>
 
             {kanDegeriDosyasi && (
               <span style={{ marginLeft: 10, fontSize: "14px" }}>{kanDegeriDosyasi.name}</span>
@@ -266,33 +280,31 @@ const FormPage = ({ onLogout }) => {
               accept="application/pdf"
               onChange={handleKanDegeriUpload}
               style={{ display: "none" }}
+              disabled={loading}
             />
           </div>
 
           <div className="formpage-fields-row">
             <Field label="AST" value={ast} onChange={setAst} type="number" />
             <Field label="ALT" value={alt} onChange={setAlt} type="number" />
-            <Field label="GGT" value={ggt} onChange={setGgt} type="number" />
             <Field label="ALP" value={alp} onChange={setAlp} type="number" />
             <Field label="Protein" value={proteins} onChange={setProteins} type="number" />
             <Field label="AG Oranı" value={agRatio} onChange={setAgRatio} type="number" />
             <Field label="Total Bilirubin" value={totalBilirubin} onChange={setTotalBilirubin} type="number" />
             <Field label="Direkt Bilirubin" value={directBilirubin} onChange={setDirectBilirubin} type="number" />
             <Field label="Albumin" value={albumin} onChange={setAlbumin} type="number" />
-            <Field label="Trombosit (Platelet)" value={platelet} onChange={setPlatelet} type="number" />
           </div>
 
-          <button onClick={handleSubmit} className="formpage-submit-btn">
+          <button onClick={handleSubmit} className="formpage-submit-btn" disabled={loading}>
             Tahmin Et
           </button>
+          
+          {loading && <LoadingSpinner />}
+          
         </div>
       </div>
     </div>
   );
 };
-
-
-
-
 
 export default FormPage;

@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import "./ResultAndReportPage.css";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-
+import Chatbot from "../components/Chatbot";
 const ResultAndReportPage = () => {
   const reportRef = useRef();
   const location = useLocation();
@@ -21,6 +21,7 @@ const ResultAndReportPage = () => {
     age,
     labValues,
     ultrasoundImage,
+    gender,
   } = hastaVerisi;
 
   const currentDate = new Date().toLocaleDateString("tr-TR", {
@@ -28,6 +29,13 @@ const ResultAndReportPage = () => {
     month: "long",
     year: "numeric",
   });
+
+  // 0 ve 1 değerlerini "Sağlıklı" ve "Hasta" olarak döndürür
+  const labelFromPrediction = (value) => {
+    if (value === 0 || value === "0") return "Sağlıklı";
+    if (value === 1 || value === "1") return "Hasta";
+    return value;
+  };
 
   const downloadPDF = () => {
     const input = reportRef.current;
@@ -44,6 +52,7 @@ const ResultAndReportPage = () => {
 
   return (
     <div className="report-page">
+ <Chatbot />
       <div className="report-container" ref={reportRef}>
         <div className="header">
           <img src="/images/istun_logo.png" alt="Logo" className="logo" />
@@ -61,7 +70,9 @@ const ResultAndReportPage = () => {
             <tbody>
               <tr>
                 <td>Adı ve Soyadı:</td>
-                <td>{name} {surname}</td>
+                <td>
+                  {name} {surname}
+                </td>
               </tr>
               <tr>
                 <td>T.C. Kimlik No:</td>
@@ -71,6 +82,12 @@ const ResultAndReportPage = () => {
                 <td>Yaş:</td>
                 <td>{age}</td>
               </tr>
+              <tr>
+              <td>Cinsiyet:</td>
+              <td>{gender}</td>
+            </tr>
+
+              
             </tbody>
           </table>
         </div>
@@ -78,8 +95,14 @@ const ResultAndReportPage = () => {
         <div className="section">
           <h4>FİBROZİS EVRE TAHMİNİ:</h4>
           <div className="box">
-            {prediction !== undefined && <p>RF Model Tahmini: {prediction}</p>}
-            {imagePrediction && <p>CNN Model Tahmini: {imagePrediction} (%{confidence})</p>}
+            {prediction !== undefined && (
+              <p>RF Model Tahmini: {labelFromPrediction(prediction)}</p>
+            )}
+            {imagePrediction !== undefined && (
+              <p>
+                CNN Model Tahmini: {labelFromPrediction(imagePrediction)} (%{confidence})
+              </p>
+            )}
           </div>
         </div>
 
@@ -133,5 +156,3 @@ const ResultAndReportPage = () => {
 };
 
 export default ResultAndReportPage;
-
-

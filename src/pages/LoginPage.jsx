@@ -28,19 +28,21 @@ const LoginPage = ({ onLogin }) => {
       setError("Lütfen kullanıcı adı ve şifreyi boş bırakmayınız.");
       return;
     }
-
+  
     const foundUser = users.find(
       (user) => user.username === username && user.password === password
     );
-
+  
     if (foundUser) {
       setError("");
-      onLogin();
-      navigate("/");
+      localStorage.setItem("userName", username); // ← Kullanıcı adı saklanıyor
+      onLogin(); // üst component'e bilgi verir (isteğe bağlı)
+      navigate("/"); // ana sayfaya yönlendirme
     } else {
       setError("Kullanıcı adı veya şifre yanlış.");
     }
   };
+  
 
   return (
     <div style={styles.container}>
@@ -110,8 +112,8 @@ const styles = {
     backgroundColor: "#f9f9f9", // Kart beyaz
     padding: "40px",
     borderRadius: "25px",
-    boxShadow: "0 12px 24px rgba(0, 0, 0, 0.12)",
-    border: "1px solid rgba(230, 230, 230, 0.7)",
+    boxShadow: "0 12px 24pxrgba(91, 59, 7, 0.61)",
+    border: "10px solid #A08963",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -129,7 +131,7 @@ const styles = {
   },
   title: {
     marginBottom: "20px",
-    color: "#2E7D32",
+    color: "#213448",
     fontSize: "24px",
     fontWeight: "700",
   },
@@ -148,7 +150,7 @@ const styles = {
   button: {
     padding: "12px 20px",
     width: "100%",
-    backgroundColor: "#2E7D32",
+    backgroundColor: "#213448",
     color: "#fff",
     border: "none",
     borderRadius: "8px",

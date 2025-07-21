@@ -8,14 +8,10 @@ from PIL import Image
 import requests
 
 # Model yolları
-
-RF_MODEL_PATH = r"C:\Users\KEVSER\Desktop\aaa\Main\rf_model.pkl"
-SCALER_PATH = r"C:\Users\KEVSER\Desktop\aaa\Main\scaler.pkl"
-CNN_MODEL_PATH = r"C:\Users\KEVSER\Desktop\aaa\Main\cnn_model.h5"
-API_KEY = "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"
-
-
-
+RF_MODEL_PATH = "/Users/busrainan/Desktop/new3/Main/rf_model.pkl"
+SCALER_PATH = "/Users/busrainan/Desktop/new3/Main/scaler.pkl"
+CNN_MODEL_PATH = "/Users/busrainan/Desktop/new3/Main/cnn_model.h5"
+API_KEY = "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"
 class_labels = ['F0', 'F1', 'F2', 'F3', 'F4']
 
 app = Flask(__name__)
@@ -46,7 +42,10 @@ def predict():
             float(data["AG_Ratio"])
         ]
 
-        image = request.files["image"]
+        image = request.files.get("image", None)
+        if image is None:
+            return jsonify({"error": "Ultrasound image is required."}), 400
+
         image_path = "temp_image.jpg"
         image.save(image_path)
 
@@ -66,22 +65,23 @@ def predict():
         confidence = float(np.max(predictions) * 100)
 
         prompt = f"""
-        You are a hepatology specialist. Based on the patient's blood biochemistry results and the predicted liver fibrosis stage, generate a medical report.
+    Siz bir hepatoloji uzmanısınız. Hastanın kan biyokimya sonuçları ve tahmin edilen karaciğer fibrozis evresine göre tıbbi bir rapor oluşturun.
 
-        Patient's Lab Results:
-        - Total Bilirubin: {input_vals[0]}
-        - Direct Bilirubin: {input_vals[1]}
-        - ALP: {input_vals[2]}
-        - ALT: {input_vals[3]}
-        - AST: {input_vals[4]}
-        - Proteins: {input_vals[5]}
-        - Albumin: {input_vals[6]}
-        - A/G Ratio: {input_vals[7]}
+    Hastanın Laboratuvar Sonuçları:
+    - Total Bilirubin: {input_vals[0]}
+    - Direkt Bilirubin: {input_vals[1]}
+    - ALP: {input_vals[2]}
+    - ALT: {input_vals[3]}
+    - AST: {input_vals[4]}
+    - Proteinler: {input_vals[5]}
+    - Albümin: {input_vals[6]}
+    - A/G Oranı: {input_vals[7]}
 
-        Predicted Fibrosis Stage: {predicted_class}
+    Tahmin Edilen Fibrozis Evresi: {predicted_class}
 
-        Write a clinical interpretation, possible etiology, recommendations, and follow-up.
-        """
+    Klinik bir yorum, olası etiyoloji (neden), öneriler ve takip planı yazınız.
+"""
+
 
         headers = {
             "Authorization": f"Bearer {API_KEY}",
@@ -89,7 +89,7 @@ def predict():
         }
 
         payload = {
-            "model": "mistralai/mistral-7b-instruct",
+            "model": "tngtech/deepseek-r1t2-chimera:free",
             "messages": [{"role": "user", "content": prompt}]
         }
 
@@ -98,6 +98,7 @@ def predict():
 
         if llm_response.status_code == 200:
             explanation = llm_response.json()["choices"][0]["message"]["content"]
+
         else:
             explanation = "LLM response failed."
 
@@ -107,6 +108,44 @@ def predict():
             "confidence": round(confidence, 2),
             "llm_explanation": explanation
         })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    try:
+        data = request.json
+        user_message = data.get("message", "")
+        if not user_message:
+            return jsonify({"error": "Mesaj boş olamaz."}), 400
+
+        prompt = f"""
+    Siz bir hepatoloji uzmanı asistanısınız. Hastanın sorusuna açık ve profesyonel bir şekilde yanıt verin.
+
+    Hastanın sorusu: {user_message}
+"""
+
+
+        headers = {
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "model": "tngtech/deepseek-r1t2-chimera:free",
+            "messages": [{"role": "user", "content": prompt}]
+        }
+
+        llm_response = requests.post("https://openrouter.ai/api/v1/chat/completions",
+                                     headers=headers, json=payload)
+
+        if llm_response.status_code == 200:
+            answer = llm_response.json()["choices"][0]["message"]["content"]
+        else:
+            return jsonify({"error": "LLM API çağrısı başarısız."}), 500
+
+        return jsonify({"response": answer})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

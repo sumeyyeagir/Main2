@@ -1,7 +1,18 @@
-import React from "react";
-import { FiLogOut } from "react-icons/fi"; // Feather Icons'tan çıkış ikonu
+import React, { useEffect, useState } from "react";
+import { FiLogOut } from "react-icons/fi";
 
 const PersonalInfoBar = ({ onLogout }) => {
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("userName");
+    if (storedName) {
+      setUserName(storedName);
+    }
+  }, []);
+
+  const firstLetter = userName?.charAt(0).toUpperCase();
+
   return (
     <div
       style={{
@@ -40,26 +51,55 @@ const PersonalInfoBar = ({ onLogout }) => {
         "Erken teşhis hayat kurtarır!"
       </div>
 
-      {/* Sağ: Çıkış Yap Butonu */}
-<button
-  onClick={onLogout}
-  style={{
-    backgroundColor: "#ffffffff",
-    color: "black",
-    padding: "10px 20px",
-    borderRadius: "5px",
-    border: "none",
-    fontWeight: "bold",
-    fontSize: "14px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  }}
->
-  <FiLogOut size={18} /> {/* İkon */}
-  Çıkış Yap
-</button>
+      {/* Sağ: Kullanıcı ve Çıkış */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: "6px" }}>
+          {/* Profil Harfi */}
+          <div
+            style={{
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+              backgroundColor: "#ffffff33",
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: "bold",
+              marginRight: "10px",
+              fontSize: "14px",
+            }}
+          >
+            {firstLetter}
+          </div>
+          <div style={{ fontSize: "14px", fontWeight: "bold", color: "white" }}>
+            {userName}
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            localStorage.removeItem("userName"); // Çıkarken temizle
+            onLogout();
+          }}
+          style={{
+            backgroundColor: "#ffffffff",
+            color: "black",
+            padding: "6px 14px",
+            borderRadius: "5px",
+            border: "none",
+            fontWeight: "bold",
+            fontSize: "13px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <FiLogOut size={16} />
+          Çıkış Yap
+        </button>
+      </div>
     </div>
   );
 };
