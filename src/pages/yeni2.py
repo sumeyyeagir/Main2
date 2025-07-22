@@ -1,59 +1,84 @@
 import fitz  # PyMuPDF
 
-# PDF dosyasını aç
-doc = fitz.open(r"C:\Users\ervae\Downloads\Proje-main\src\pages\Enabiz-Tahlilleri.pdf")  # ← PDF dosyanın adı
+def extract_patient_info_from_pdf_path(pdf_path):
+    """
+    PDF dosyasını açar, platelet (PLT), isim ve soyismi çıkarır.
+    """
+    doc = fitz.open(pdf_path)
+    full_text = ""
+    for page in doc:
+        full_text += page.get_text() + "\n"
+    doc.close()
 
-# Tüm içerik biriktirilecek
-full_text = ""
+    satirlar = full_text.split("\n")
 
-# Her sayfayı gez ve metni ekle
-for page in doc:
-    full_text += page.get_text() + "\n"
+    # PLT satırını bul
+    plt_index = None
+    for i, satir in enumerate(satirlar):
+        if "PLT" in satir:
+            plt_index = i
+            break
 
-# PDF kapat (iyi bir alışkanlık)
-doc.close()
+    sonuc = ""
+    if plt_index is not None:
+        sonraki_satirlar = satirlar[plt_index + 1 : plt_index + 2]
+        sonuc = "\n".join(sonraki_satirlar)
 
-# Tüm içeriği yazdır
-print(full_text)
-print('*'*50)
+    # İsim soyisim satırını bul
+    isim_index = None
+    for i, satir in enumerate(satirlar):
+        if "Adı" in satir:
+            isim_index = i
+            break
 
-metin = full_text
+    t = ""
+    soyisim = ""
+    if isim_index is not None:
+        isim_satiri = satirlar[isim_index]
+        isim_parcasi = isim_satiri.split()
+        if len(isim_parcasi) >= 4:
+            t = isim_parcasi[2]
+            soyisim = isim_parcasi[3]
 
-# Metni satırlara böl
-satirlar = metin.split("\n")
-
-# PLT'nin olduğu satırın index'ini bul
-plt_index = None
-for i, satir in enumerate(satirlar):
-    if "PLT" in satir:
-        plt_index = i
-        break
-
-if plt_index is not None:
-    # PLT'den sonraki satırları al
-    sonraki_satirlar = satirlar[plt_index+1 : plt_index + 2]
-    # İstersen hepsini birleştir
-    sonuc = "\n".join(sonraki_satirlar)
-    print(sonuc)
-
-for i, satir in enumerate(satirlar):
-    if "Adı" in satir:
-        plt_index = i
-        break
-
-if plt_index is not None:
-    # PLT'den sonraki satırları al
-    sonraki_satirlar = satirlar[plt_index : plt_index +1]
-    isim = "\n".join(sonraki_satirlar)
-    print(isim)
-    isim = isim.split()
-    t=isim[2]
-    print(isim[2])
-
-    soyisim = isim[3]
-    print(soyisim)
-
-else:
-    print("PLT bulunamadı.")
+    return sonuc, t, soyisim
 
 
+def extract_patient_info_from_pdf_file(pdf_file):
+    """
+    pdf_file: Flask'tan gelen dosya objesi (file stream)
+    """
+    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+    full_text = ""
+    for page in doc:
+        full_text += page.get_text() + "\n"
+    doc.close()
+
+    satirlar = full_text.split("\n")
+
+    plt_index = None
+    for i, satir in enumerate(satirlar):
+        if "PLT" in satir:
+            plt_index = i
+            break
+
+    sonuc = ""
+    if plt_index is not None:
+        sonraki_satirlar = satirlar[plt_index + 1 : plt_index + 2]
+        sonuc = "\n".join(sonraki_satirlar)
+
+    isim_index = None
+    for i, satir in enumerate(satirlar):
+        if "Adı" in satir:
+            isim_index = i
+            break
+
+    t = ""
+    soyisim = ""
+    if isim_index is not None:
+        isim_satiri = satirlar[isim_index]
+        isim_parcasi = isim_satiri.split()
+        if len(isim_parcasi) >= 4:
+            t = isim_parcasi[2]
+            soyisim = isim_parcasi[3]
+
+    return sonuc, t, soyisim

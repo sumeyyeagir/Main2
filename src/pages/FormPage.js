@@ -5,7 +5,27 @@ import PersonalInfoBar from "../components/PersonalInfoBar";
 import "./FormPage.css";
 import Chatbot from "../components/Chatbot";
 import LoadingSpinner from "../components/LoadingSpinner";
-// ✅ Field bileşeni component DIŞINA alındı (odak hatasını engeller)
+import { data } from "./data";
+
+// TC Kimlik No doğrulama fonksiyonu
+const isValidTC = (tc) => {
+  if (!/^\d{11}$/.test(tc)) return false;
+  if (tc[0] === "0") return false;
+
+  const digits = tc.split("").map(Number);
+  const sumOdd = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
+  const sumEven = digits[1] + digits[3] + digits[5] + digits[7];
+  const digit10 = ((sumOdd * 7) - sumEven) % 10;
+  if (digit10 !== digits[9]) return false;
+
+  const total = digits.slice(0, 10).reduce((a, b) => a + b, 0);
+  const digit11 = total % 10;
+  if (digit11 !== digits[10]) return false;
+
+  return true;
+};
+
+// Ortak Field bileşeni
 const Field = ({ label, value, onChange, type = "text" }) => (
   <div style={{ display: "flex", flexDirection: "column", minWidth: "150px" }}>
     <label
@@ -33,7 +53,9 @@ const Field = ({ label, value, onChange, type = "text" }) => (
         outline: "none",
       }}
       placeholder={`${label} giriniz`}
-      step={type === "number" ? "0.01" : undefined}
+      step={type === "number" ? "1" : undefined}
+      inputMode={type === "number" ? "numeric" : undefined}
+      pattern={type === "number" ? "\\d*" : undefined}
     />
   </div>
 );
@@ -41,14 +63,12 @@ const Field = ({ label, value, onChange, type = "text" }) => (
 const FormPage = ({ onLogout }) => {
   const navigate = useNavigate();
 
-  // Hasta bilgileri
   const [tc, setTc] = useState("");
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
 
-  // Kan değerleri
   const [ast, setAst] = useState("");
   const [alt, setAlt] = useState("");
   const [alp, setAlp] = useState("");
@@ -62,15 +82,46 @@ const FormPage = ({ onLogout }) => {
   const [ultrasoundFile, setUltrasoundFile] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [kanDegeriDosyasi, setKanDegeriDosyasi] = useState(null);
-
-  // Yeni loading state
   const [loading, setLoading] = useState(false);
 
-  const handleImageUpload = (e) => {
+  const [vlmOutput, setVlmOutput] = useState("");
+  const [vlmLoading, setVlmLoading] = useState(false);
+
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
       setUltrasoundFile(file);
       setSelectedImage(URL.createObjectURL(file));
+
+      
+
+      const formData = new FormData();
+      formData.append("Total_Bilirubin", totalBilirubin || "0");
+      formData.append("Direct_Bilirubin", directBilirubin || "0");
+      formData.append("ALP", alp || "0");
+      formData.append("ALT", alt || "0");
+      formData.append("AST", ast || "0");
+      formData.append("Albumin", albumin || "0");
+      formData.append("AG_Ratio", agRatio || "0");
+      formData.append("Proteins", proteins || "0");
+      formData.append("image", file);
+
+      try {
+        setVlmLoading(true);
+        const response = await fetch("http://localhost:5001/predict", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) throw new Error("VLM API çağrısı başarısız.");
+        const result = await response.json();
+
+        setVlmOutput(result.vlm_explanation || "VLM çıktısı boş.");
+      } catch (error) {
+        setVlmOutput("VLM hatası: " + error.message);
+      } finally {
+        setVlmLoading(false);
+      }
     }
   };
 
@@ -82,13 +133,12 @@ const FormPage = ({ onLogout }) => {
       formData.append("file", file);
 
       try {
-        const response = await fetch("http://localhost:5000/parse", {
+        const response = await fetch("http://localhost:5001/parse", {
           method: "POST",
           body: formData,
         });
 
         if (!response.ok) throw new Error("PDF dosyası okunamadı.");
-
         const result = await response.json();
 
         setAst(result.ast || "");
@@ -105,7 +155,17 @@ const FormPage = ({ onLogout }) => {
   };
 
   const handleSubmit = async () => {
-    setLoading(true); // Loading başlat
+    if (!isValidTC(tc)) {
+      alert("Geçerli bir T.C. Kimlik numarası giriniz.");
+      return;
+    }
+
+    if (!ultrasoundFile) {
+      alert("Lütfen bir ultrason görüntüsü yükleyin.");
+      return;
+    }
+
+    setLoading(true);
 
     const formData = new FormData();
     formData.append("Total_Bilirubin", totalBilirubin || "0");
@@ -116,10 +176,7 @@ const FormPage = ({ onLogout }) => {
     formData.append("Proteins", proteins || "0");
     formData.append("Albumin", albumin || "0");
     formData.append("AG_Ratio", agRatio || "0");
-
-    if (ultrasoundFile) {
-      formData.append("image", ultrasoundFile);
-    }
+    formData.append("image", ultrasoundFile);
 
     try {
       const response = await fetch("http://localhost:5001/predict", {
@@ -128,10 +185,9 @@ const FormPage = ({ onLogout }) => {
       });
 
       if (!response.ok) throw new Error("Tahmin API çağrısı başarısız.");
-
       const result = await response.json();
 
-      setLoading(false); // Loading bitir
+      setLoading(false);
 
       navigate("/result", {
         state: {
@@ -167,25 +223,18 @@ const FormPage = ({ onLogout }) => {
     <div>
       <PersonalInfoBar onLogout={onLogout} />
       <Chatbot />
-
       <div className="formpage-container">
         <div className="formpage-image-section">
           <h2 className="formpage-title">Ultrason Görüntüsü</h2>
-          <div className="formpage-image-box">
+          <div
+            className="formpage-image-box clickable-image-box"
+            onClick={() => document.getElementById("imageUpload").click()}
+          >
             {selectedImage ? (
               <img src={selectedImage} alt="Ultrason" className="formpage-ultrasound-img" />
             ) : (
-              <span className="formpage-image-placeholder">Henüz görüntü yüklenmedi</span>
+              <img src="/images/image.png" alt="img" style={{ width: "100px", height: "100px" }} />
             )}
-          </div>
-          <div className="formpage-image-btn-box">
-            <button
-              onClick={() => document.getElementById("imageUpload").click()}
-              className="formpage-image-btn"
-              disabled={loading}
-            >
-              {selectedImage ? "Görseli Değiştir" : "Görsel Yükle"}
-            </button>
           </div>
           <input
             id="imageUpload"
@@ -195,113 +244,231 @@ const FormPage = ({ onLogout }) => {
             style={{ display: "none" }}
             disabled={loading}
           />
+
+          <h2 className="formpage-title">VLM Çıktısı</h2>
+          <div
+            className="vlmcikti"
+            style={{
+              marginTop: "28px",
+              width: "100%",
+              maxWidth: "570px",
+              padding: "16px",
+              backgroundColor: "#f9f4ec",
+              border: "2px solid rgba(72, 55, 35, 0.2)",
+              borderRadius: "10px",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+              fontFamily: "Poppins, sans-serif",
+              color: "#213448",
+              textAlign: "left",
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "flex-start",
+              overflow: "hidden",
+              margin: "0 0 20px 30px",
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+            }}
+          >
+            {vlmLoading ? "🔄 Görsel analiz ediliyor, lütfen bekleyin..." : (vlmOutput || "Henüz çıktı alınmadı.")}
+          </div>
         </div>
 
         <div className="formpage-info-section">
-          <h2 className="formpage-title">Hasta Bilgileri</h2>
-          <div className="formpage-fields-row">
-            <Field label="T.C." value={tc} onChange={setTc} />
-            <Field label="İsim" value={name} onChange={setName} />
-            <Field label="Soyisim" value={surname} onChange={setSurname} />
-            <Field label="Yaş" value={age} onChange={setAge} type="number" />
-            <div style={{ display: "flex", flexDirection: "column", minWidth: "150px" }}>
-              <label
-                style={{
-                  marginBottom: "5px",
-                  fontWeight: "bold",
-                  fontSize: "15px",
-                  color: "#547792",
-                  fontFamily: "Poppins, sans-serif",
+        <h2 className="formpage-title">Hasta Bilgileri</h2>
+          <div className="patient-info-container">
+            <div className="formpage-fields-row">
+  <Field
+    label="T.C."
+    value={tc}
+    onChange={(val) => {
+      if (/^\d*$/.test(val)) {
+        setTc(val);
+      }
+    }}
+  />
+              <Field
+                label="İsim"
+                value={name}
+                onChange={(val) => {
+                  if (/^[a-zA-ZçÇğĞıİöÖşŞüÜ\s]*$/.test(val)) {
+                    setName(val);
+                  }
                 }}
-              >
-                Cinsiyet
-              </label>
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                style={{
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "none",
-                  boxShadow: "5px 5px 5px rgba(33, 52, 72, 0.51)",
-                  fontSize: "14px",
-                  width: "150px",
-                  outline: "none",
-                  fontFamily: "Poppins, sans-serif",
+              />
+              <Field
+                label="Soyisim"
+                value={surname}
+                onChange={(val) => {
+                  if (/^[a-zA-ZçÇğĞıİöÖşŞüÜ\s]*$/.test(val)) {
+                    setSurname(val);
+                  }
                 }}
-                disabled={loading}
+              />
+              <Field
+                label="Yaş"
+                value={age}
+                onChange={(val) => {
+                  if (/^\d*$/.test(val)) {
+                    setAge(val);
+                  }
+                }}
+                type="number"
+              />
+              <div
+                style={{ display: "flex", flexDirection: "column", minWidth: "150px" }}
               >
-                <option value="">Seçiniz</option>
-                <option value="Kadın">Kadın</option>
-                <option value="Erkek">Erkek</option>
-                <option value="Diğer">Diğer</option>
-              </select>
+                <label
+                  style={{
+                    marginBottom: "5px",
+                    fontWeight: "bold",
+                    fontSize: "15px",
+                    color: "#547792",
+                    fontFamily: "Poppins, sans-serif",
+                  }}
+                >
+                  Cinsiyet
+                </label>
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  style={{
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "none",
+                    boxShadow: "5px 5px 5px rgba(33, 52, 72, 0.51)",
+                    fontSize: "14px",
+                    width: "150px",
+                    outline: "none",
+                    fontFamily: "Poppins, sans-serif",
+                  }}
+                  disabled={loading}
+                >
+                  <option value="">Seçiniz</option>
+                  <option value="Kadın">Kadın</option>
+                  <option value="Erkek">Erkek</option>
+                  <option value="Diğer">Diğer</option>
+                </select>
+              </div>
             </div>
           </div>
 
           <h2 className="formpage-title">Kan Değerleri</h2>
-          <div style={{ marginBottom: "15px" }}>
-            <button
-              style={{
-                backgroundColor: "#213448",
-                color: "white",
-                padding: "12px 20px",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "600",
-                boxShadow: "0 4px 8px rgba(33, 52, 72, 0.3)",
-                transition: "all 0.3s ease",
-              }}
-              onClick={() => document.getElementById("kanDegeriUpload").click()}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#304a6e";
-                e.currentTarget.style.transform = "scale(1.05)";
-                e.currentTarget.style.boxShadow = "0 6px 12px rgba(33, 52, 72, 0.5)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#213448";
-                e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = "0 4px 8px rgba(33, 52, 72, 0.3)";
-              }}
-              disabled={loading}
-            >
-              <img src="/images/pdf.png" alt="PDF" style={{ width: "30px", height: "30px", marginRight: "5px" }} />
-              PDF Olarak Yükle
-            </button>
+          <div className="lab-values-container">
+            
+            <div style={{ marginBottom: "15px" }}>
+              <button
+                style={{
+                  backgroundColor: "#213448",
+                  color: "white",
+                  padding: "0px 15px",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  boxShadow: "0 4px 8px rgba(33, 52, 72, 0.3)",
+                  transition: "all 0.3s ease",
+                }}
+                onClick={() => document.getElementById("kanDegeriUpload").click()}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#304a6e";
+                  e.currentTarget.style.transform = "scale(1.05)";
+                  e.currentTarget.style.boxShadow = "0 6px 12px rgba(33, 52, 72, 0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#213448";
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.boxShadow = "0 4px 8px rgba(33, 52, 72, 0.3)";
+                }}
+                disabled={loading}
+              >
+                <img
+                  src="/images/pdf.png"
+                  alt="PDF"
+                  style={{ width: "30px", height: "30px", marginRight: "5px",marginTop:"15px"}}
+                />
+                PDF Olarak Yükle
+                
+              </button>
 
-            {kanDegeriDosyasi && (
-              <span style={{ marginLeft: 10, fontSize: "14px" }}>{kanDegeriDosyasi.name}</span>
-            )}
-            <input
-              id="kanDegeriUpload"
-              type="file"
-              accept="application/pdf"
-              onChange={handleKanDegeriUpload}
-              style={{ display: "none" }}
-              disabled={loading}
-            />
+
+
+              <input
+            id="kanDegeriUpload"
+            type="file"
+            accept="application/pdf"
+            style={{ display: "none" }}
+            onChange={handleKanDegeriUpload}
+          />
+
+
+
+
+
+
+              {kanDegeriDosyasi && (
+                <span style={{ marginLeft: 10, fontSize: "14px" }}>
+                  {kanDegeriDosyasi.name}
+                </span>
+              )}
+
+
+<p style={{ color: "#c0392b", fontSize: "13px", marginTop: "8px", fontFamily: "Poppins, sans-serif" }}>
+  *Kan değerlerini içeren PDF dosyasını yüklerseniz, manuel veri girişine gerek kalmaz. Sistem otomatik olarak değerleri algılar.
+  
+</p>
+
+
+
+              <input
+                id="kanDegeriUpload"
+                type="file"
+                accept="application/pdf"
+                onChange={handleKanDegeriUpload}
+                style={{ display: "none" }}
+                disabled={loading}
+              />
+            </div>
+            <div className="formpage-fields-row">
+              <Field label="AST" value={ast} onChange={setAst} type="number" />
+              <Field label="ALT" value={alt} onChange={setAlt} type="number" />
+              <Field label="ALP" value={alp} onChange={setAlp} type="number" />
+              <Field label="Protein" value={proteins} onChange={setProteins} type="number" />
+              <Field label="AG Oranı" value={agRatio} onChange={setAgRatio} type="number" />
+              <Field
+                label="Total Bilirubin"
+                value={totalBilirubin}
+                onChange={setTotalBilirubin}
+                type="number"
+              />
+              <Field
+                label="Direkt Bilirubin"
+                value={directBilirubin}
+                onChange={setDirectBilirubin}
+                type="number"
+              />
+              <Field label="Albumin" value={albumin} onChange={setAlbumin} type="number" />
+            </div>
           </div>
 
-          <div className="formpage-fields-row">
-            <Field label="AST" value={ast} onChange={setAst} type="number" />
-            <Field label="ALT" value={alt} onChange={setAlt} type="number" />
-            <Field label="ALP" value={alp} onChange={setAlp} type="number" />
-            <Field label="Protein" value={proteins} onChange={setProteins} type="number" />
-            <Field label="AG Oranı" value={agRatio} onChange={setAgRatio} type="number" />
-            <Field label="Total Bilirubin" value={totalBilirubin} onChange={setTotalBilirubin} type="number" />
-            <Field label="Direkt Bilirubin" value={directBilirubin} onChange={setDirectBilirubin} type="number" />
-            <Field label="Albumin" value={albumin} onChange={setAlbumin} type="number" />
-          </div>
-
-          <button onClick={handleSubmit} className="formpage-submit-btn" disabled={loading}>
+          <button
+            onClick={handleSubmit}
+            className="formpage-submit-btn"
+            disabled={loading}
+          >
             Tahmin Et
           </button>
-          
+
           {loading && <LoadingSpinner />}
-          
         </div>
+
+
+
+
+
+
+
       </div>
     </div>
   );
