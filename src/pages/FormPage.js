@@ -141,6 +141,9 @@ const FormPage = ({ onLogout }) => {
         if (!response.ok) throw new Error("PDF dosyası okunamadı.");
         const result = await response.json();
 
+        console.log("Backend'den gelen sonuç:", result); // Backend yanıtını kontrol et
+
+        // State güncellemeleri
         setAst(result.ast || "");
         setAlt(result.alt || "");
         setAlp(result.alp || "");
@@ -148,7 +151,17 @@ const FormPage = ({ onLogout }) => {
         setDirectBilirubin(result.directBilirubin || "");
         setAlbumin(result.albumin || "");
         setPlatelet(result.platelet || "");
+
+        // Debugging için input alanlarına yazılan değerleri kontrol et
+        console.log("AST:", result.ast);
+        console.log("ALT:", result.alt);
+        console.log("ALP:", result.alp);
+        console.log("Total Bilirubin:", result.totalBilirubin);
+        console.log("Direct Bilirubin:", result.directBilirubin);
+        console.log("Albumin:", result.albumin);
+        console.log("Platelet:", result.platelet);
       } catch (error) {
+        console.error("PDF işlenemedi:", error); // Hata mesajını konsola yazdır
         alert("PDF işlenemedi: " + error.message);
       }
     }
@@ -168,7 +181,7 @@ const FormPage = ({ onLogout }) => {
     setLoading(true);
 
     const formData = new FormData();
-    formData.append("Total_Bilirubin", totalBilirubin || "0");
+    formData.append("Total_Bilirubin", totalBilirubin || "");
     formData.append("Direct_Bilirubin", directBilirubin || "0");
     formData.append("ALP", alp || "0");
     formData.append("ALT", alt || "0");

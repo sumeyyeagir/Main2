@@ -60,8 +60,8 @@ const LoginPage = ({ onLogin }) => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <img src="/images/istun_logo.png" alt="Logo" style={styles.logo} />
-        <h2 style={styles.title}>"Bilim Erekn Teşhisle Başlar!"</h2>
+        <img src="/images/logo.jpeg" alt="Logo" style={styles.logo} />
+        <h2 style={styles.title}>"Bilim Erken Teşhisle Başlar!"</h2>
 
         <input
           type="text"

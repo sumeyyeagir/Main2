@@ -126,7 +126,7 @@ def predict():
 
         # LLM explanation
         llm_prompt = f"""
-Sen tecrübeli bir hepatoloji uzmanı ve karaciğer hastalıkları üzerine çalışan bir yapay zeka destekli klinik danışmansın. Aşağıda bir hastaya ait biyokimya laboratuvar verileri ve yapay zeka tarafından tahmin edilen karaciğer fibroz evresi verilmiştir.
+Sen tecrübeli bir hepatoloji uzmanı ve karaciğer hastalıkları üzerine çalışan bir yapay zeka destekli klinik danışmansın. Aşağıda bir hastaya ait biyokimya laboratuvar verileri ve yapay zeka tarafından tahmin edilen karaciğer fibroz evreleri verilmiştir.
 
 Bu bilgilere dayanarak:
 1. Hastanın mevcut karaciğer durumu hakkında detaylı klinik bir değerlendirme yap,
@@ -230,6 +230,42 @@ Patient's question: {user_message}
         return jsonify({"response": answer})
 
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/parse", methods=["POST"])
+def parse_pdf():
+    try:
+        file = request.files.get("file")
+        if not file:
+            return jsonify({"error": "PDF dosyası yüklenmedi."}), 400
+
+        # PDF dosyasını işlemek için PyPDF2 veya pdfplumber gibi bir kütüphane kullanılabilir
+        import pdfplumber
+        pdf_text = ""
+        with pdfplumber.open(file) as pdf:
+            for page in pdf.pages:
+                pdf_text += page.extract_text() or ""
+
+        # PDF içeriğini logla
+        print("PDF İçeriği:\n", pdf_text)
+
+        # Regex ifadelerini PDF formatına uygun şekilde güncelledim
+        import re
+        result = {
+            "ast": re.search(r"Aspartat transaminaz.*?(\d+)\s*U/L", pdf_text).group(1) if re.search(r"Aspartat transaminaz.*?(\d+)\s*U/L", pdf_text) else None,
+            "alt": re.search(r"Alanin aminotransferaz.*?(\d+)\s*U/L", pdf_text).group(1) if re.search(r"Alanin aminotransferaz.*?(\d+)\s*U/L", pdf_text) else None,
+            "alp": re.search(r"Alkalen fosfataz.*?\(ALP\).*?(\d+)\s*U/L", pdf_text).group(1) if re.search(r"Alkalen fosfataz.*?\(ALP\).*?(\d+)\s*U/L", pdf_text) else None,
+            "totalBilirubin": re.search(r"Bilirubin \(total\).*?(\d+\.\d+)\s*mg/dL", pdf_text).group(1) if re.search(r"Bilirubin \(total\).*?(\d+\.\d+)\s*mg/dL", pdf_text) else None,
+            "directBilirubin": re.search(r"Bilirubin \(direkt\).*?(\d+\.\d+)\s*mg/dL", pdf_text).group(1) if re.search(r"Bilirubin \(direkt\).*?(\d+\.\d+)\s*mg/dL", pdf_text) else None,
+            "albumin": re.search(r"Albümin.*?(\d+\.\d+)\s*g/L", pdf_text).group(1) if re.search(r"Albümin.*?(\d+\.\d+)\s*g/L", pdf_text) else None,
+            "platelet": re.search(r"PLT.*?(\d+)\s*10³/µL", pdf_text).group(1) if re.search(r"PLT.*?(\d+)\s*10³/µL", pdf_text) else None
+        }
+
+        return jsonify(result)
+
+    except Exception as e:
+        import traceback
+        print("Hata:", traceback.format_exc())  # Hata detaylarını logla
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
