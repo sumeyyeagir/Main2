@@ -9,7 +9,7 @@
   width: 800px;
   margin: 0 auto;
   font-family: Arial, sans-serif;
-  border: 1px solid #000;
+ 
   color: #000;
 
   /* Yazı taşmasını engelle */
@@ -51,18 +51,53 @@
   padding: 5px;
 }
 
-.box {
-  border: 1px solid #999;
-  /* Sabit yüksekliği kaldırdık */
-  min-height: 60px; /* Minimum yükseklik */
-  margin-top: 5px;
-  padding: 8px;
-
-  /* Satırların taşmaması için */
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+.markdown-box h1,
+.box h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 12px 0 8px;
 }
+
+.markdown-box h2,
+.box h2 {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin: 10px 0 6px;
+}
+
+.markdown-box h3,
+.box h3 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin: 8px 0 5px;
+}
+
+.markdown-box p,
+.box p {
+  margin-bottom: 5px; /* Paragraflar arasındaki boşluğu azalt */
+}
+
+.markdown-box ul,
+.box ul {
+  padding-left: 20px;
+  margin-bottom: 10px;
+}
+
+.markdown-box li,
+.box li {
+  list-style-type: disc;
+}
+
+.markdown-box strong,
+.box strong {
+  font-weight: bold;
+}
+
+.markdown-box strong,
+.box strong {
+  font-weight: bold;
+}
+
 
 .barcode-placeholder {
   height: 60px;
@@ -130,4 +165,25 @@
     font-size: 14px;
     padding: 8px 15px;
   }
+}
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  background-color: #f0f0f0;
+  overflow-x: hidden;
+}
+
+.logo {
+  height: auto;
+  max-height: 80px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.box, .markdown-box {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }

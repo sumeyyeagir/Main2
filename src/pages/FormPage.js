@@ -60,7 +60,7 @@ const Field = ({ label, value, onChange, type = "text" }) => (
   </div>
 );
 
-const FormPage = ({ onLogout }) => {
+const FormPage = ({ onLogout, onFormSubmit }) => {
   const navigate = useNavigate();
 
   const [tc, setTc] = useState("");
@@ -181,7 +181,7 @@ const FormPage = ({ onLogout }) => {
     setLoading(true);
 
     const formData = new FormData();
-    formData.append("Total_Bilirubin", totalBilirubin || "");
+    formData.append("Total_Bilirubin", totalBilirubin || "0");
     formData.append("Direct_Bilirubin", directBilirubin || "0");
     formData.append("ALP", alp || "0");
     formData.append("ALT", alt || "0");
@@ -258,7 +258,7 @@ const FormPage = ({ onLogout }) => {
             disabled={loading}
           />
 
-          <h2 className="formpage-title">VLM Çıktısı</h2>
+          <h2 className="formpage-title">Ultrason Ön Yorumu</h2>
           <div
             className="vlmcikti"
             style={{

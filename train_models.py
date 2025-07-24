@@ -15,7 +15,7 @@ from PIL import Image
 # 🔹 Klinik Verilerle RF Model Eğitimi 🔹
 print("🎓 Klinik veriler yükleniyor ve model eğitiliyor...")
 
-df = pd.read_csv(r"C:\Users\ervae\Downloads\Proje-main\Proje-main\DataSets\Liver Patient Dataset (LPD)_train.csv", encoding='ISO-8859-1')
+df = pd.read_csv("/Users/busrainan/Desktop/new5/Main/DataSets/Liver Patient Dataset (LPD)_train.csv", encoding='ISO-8859-1')
 df.columns = df.columns.str.strip().str.replace('\xa0', ' ').str.replace('  ', ' ')
 df['Gender of the patient'] = 0
 df['Result'] = df['Result'].map({1: 1, 2: 0})
@@ -31,20 +31,46 @@ clinic_features = [
 X = df[clinic_features]
 y = df['Result']
 
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report
+
+# 🎯 %80 eğitim / %20 test ayrımı
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, stratify=y, random_state=42
+)
+
+# 🔄 Standardizasyon
 scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
 
+# 🌳 Model eğitimi
 rf_model = RandomForestClassifier(random_state=42)
-rf_model.fit(X_scaled, y)
+rf_model.fit(X_train_scaled, y_train)
 
+# 🎯 Değerlendirme
+y_pred = rf_model.predict(X_test_scaled)
+print("\n🎯 Test Doğruluğu: {:.2f}%".format(accuracy_score(y_test, y_pred) * 100))
+print("\n📊 Sınıflandırma Raporu:\n", classification_report(y_test, y_pred))
+
+# 💾 Model ve scaler dosyaları
 with open("scaler.pkl", "wb") as f:
     pickle.dump(scaler, f)
 
 with open("rf_model.pkl", "wb") as f:
     pickle.dump(rf_model, f)
 
-print("✅ scaler.pkl ve rf_model.pkl dosyaları kaydedildi.\n")
+# 💾 Test verilerini kaydet (etiketli ve etiketsiz)
+pd.DataFrame(X_test).to_csv("X_test_unlabeled.csv", index=False)
+pd.concat([pd.DataFrame(X_test).reset_index(drop=True), y_test.reset_index(drop=True)], axis=1).to_csv("X_test_labeled.csv", index=False)
 
+print("✅ Model ve test CSV dosyaları başarıyla kaydedildi:")
+print("- rf_model.pkl")
+print("- scaler.pkl")
+print("- X_test_unlabeled.csv")
+print("- X_test_labeled.csv")
+
+#----------------------------------------------------------------------------------------------
 # 🔹 Görüntü Verileriyle CNN Eğitimi 🔹
 print("🖼️ Görüntü verisi işleniyor ve CNN modeli eğitiliyor...")
 
@@ -57,7 +83,7 @@ labels = []
    # with ZipFile("", 'r') as zip_ref:
     #    zip_ref.extractall("liver_data")
 
-image_folder = r"C:\Users\ervae\Downloads\Proje-main\Proje-main\DataSets\Dataset"
+image_folder = "/Users/busrainan/Desktop/new5/Main/Dataset-2"
 for label in class_labels:
     class_folder = os.path.join(image_folder, label)
     if os.path.exists(class_folder):

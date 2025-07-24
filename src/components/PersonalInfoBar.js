@@ -29,7 +29,7 @@ const PersonalInfoBar = ({ onLogout }) => {
     >
       {/* Sol: Logo */}
       <img
-        src="/images/istun.logo.white.png"
+        src="/images/logo.jpeg"
         alt="İstun Logo"
         style={{
           height: "35px",

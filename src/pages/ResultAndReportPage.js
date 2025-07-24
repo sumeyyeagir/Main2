@@ -1,9 +1,12 @@
 import React, { useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
 import "./ResultAndReportPage.css";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import ReactMarkdown from "react-markdown";
 import Chatbot from "../components/Chatbot";
+import html2pdf from "html2pdf.js";
+
 const ResultAndReportPage = () => {
   const reportRef = useRef();
   const location = useLocation();
@@ -30,7 +33,6 @@ const ResultAndReportPage = () => {
     year: "numeric",
   });
 
-  // 0 ve 1 değerlerini "Sağlıklı" ve "Hasta" olarak döndürür
   const labelFromPrediction = (value) => {
     if (value === 0 || value === "0") return "Sağlıklı";
     if (value === 1 || value === "1") return "Hasta";
@@ -38,21 +40,23 @@ const ResultAndReportPage = () => {
   };
 
   const downloadPDF = () => {
-    const input = reportRef.current;
-    html2canvas(input, { scale: 2 }).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("saglik-raporu.pdf");
-    });
+    const element = reportRef.current;
+
+    const opt = {
+      margin: 10,
+      filename: "saglik-raporu.pdf",
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+    };
+
+    html2pdf().set(opt).from(element).save();
   };
 
   return (
     <div className="report-page">
- <Chatbot />
+      <Chatbot />
       <div className="report-container" ref={reportRef}>
         <div className="header">
           <img src="/images/istun_logo.png" alt="Logo" className="logo" />
@@ -83,11 +87,9 @@ const ResultAndReportPage = () => {
                 <td>{age}</td>
               </tr>
               <tr>
-              <td>Cinsiyet:</td>
-              <td>{gender}</td>
-            </tr>
-
-              
+                <td>Cinsiyet:</td>
+                <td>{gender}</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -100,7 +102,8 @@ const ResultAndReportPage = () => {
             )}
             {imagePrediction !== undefined && (
               <p>
-                CNN Model Tahmini: {labelFromPrediction(imagePrediction)} (%{confidence})
+                CNN Model Tahmini: {labelFromPrediction(imagePrediction)} (%{" "}
+                {confidence})
               </p>
             )}
           </div>
@@ -108,7 +111,9 @@ const ResultAndReportPage = () => {
 
         <div className="section">
           <h4>YAPAY ZEKA YORUMU:</h4>
-          <div className="box">{llmExplanation || "Yorum yok."}</div>
+          <div className="box markdown-box">
+            <ReactMarkdown>{llmExplanation || "Yorum yok."}</ReactMarkdown>
+          </div>
         </div>
 
         <div className="section">
@@ -142,8 +147,8 @@ const ResultAndReportPage = () => {
         <div className="notes">
           <p>(*) Rapor tarihi: {currentDate}</p>
           <p>
-            (**) Fibrozis Evre Tahmini bölümünde Kan Değerleri ve Ultrason Görüntüsü bilgileriyle
-            eğitilmiş yapay zeka tahmin sonu bulunmaktadır.
+            (**) Fibrozis Evre Tahmini bölümünde Kan Değerleri ve Ultrason Görüntüsü
+            bilgileriyle eğitilmiş yapay zeka tahmin sonucu bulunmaktadır.
           </p>
         </div>
       </div>

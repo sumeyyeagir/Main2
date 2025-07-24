@@ -10,12 +10,11 @@ import base64
 import os
 
 # Model paths
-RF_MODEL_PATH = "/Users/busrainan/Desktop/new3/Main/rf_model.pkl"
-SCALER_PATH = "/Users/busrainan/Desktop/new3/Main/scaler.pkl"
-CNN_MODEL_PATH = "/Users/busrainan/Desktop/new3/Main/cnn_model.h5"
-
-API_KEY = "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"
-API_KEY2 = "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"
+RF_MODEL_PATH = "/Users/busrainan/Desktop/new5/rf_model.pkl"
+SCALER_PATH = "/Users/busrainan/Desktop/new5/scaler.pkl"
+CNN_MODEL_PATH = "/Users/busrainan/Desktop/new5/cnn_model.h5"
+API_KEY = "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"
+API_KEY2 = "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"
 class_labels = ['F0', 'F1', 'F2', 'F3', 'F4']
 
 app = Flask(__name__)

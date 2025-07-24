@@ -112,7 +112,7 @@
   align-items: flex-start;
 
   /* Arka plan ve doku kaldırıldı */
-  background: none;
+  background: #fff;
   box-shadow: none;
   backdrop-filter: none;
   border-radius: 0;
