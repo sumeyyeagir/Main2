@@ -1,7 +1,20 @@
-import React, { useState } from "react";
-import hastalar from "./hastalar";
+import React, { useState, useEffect } from "react";
+
 const HastaListesiPage = () => {
   const [arama, setArama] = useState("");
+  const [hastalar, setHastalar] = useState([]);
+
+  // Veriyi fetch et
+  useEffect(() => {
+    fetch("http://localhost:5001/patients")
+      .then((res) => res.json())
+      .then((data) => {
+        setHastalar(data);
+      })
+      .catch((error) => {
+        console.error("Veri çekme hatası:", error);
+      });
+  }, []);
 
   const filtrelenmisHastalar = hastalar.filter((hasta) =>
     hasta.ad.toLowerCase().includes(arama.toLowerCase())
@@ -38,9 +51,7 @@ const HastaListesiPage = () => {
                 filtrelenmisHastalar.slice(0, 25).map((hasta, index) => (
                   <tr
                     key={index}
-                    style={
-                      index % 2 === 0 ? styles.trEven : styles.trOdd
-                    }
+                    style={index % 2 === 0 ? styles.trEven : styles.trOdd}
                   >
                     <td style={styles.td}>{hasta.ad}</td>
                     <td style={styles.td}>{hasta.tc}</td>

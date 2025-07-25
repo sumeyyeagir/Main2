@@ -1,11 +1,10 @@
-import React, { useRef } from "react";
-import { useLocation, Navigate } from "react-router-dom";
+import React, { useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "./ResultAndReportPage.css";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import ReactMarkdown from "react-markdown";
+// import html2canvas from "html2canvas";
+// import jsPDF from "jspdf";
+import html2pdf from "html2pdf.js";  // html2pdf'yi import ettik
 import Chatbot from "../components/Chatbot";
-import html2pdf from "html2pdf.js";
 
 const ResultAndReportPage = () => {
   const reportRef = useRef();
@@ -39,6 +38,7 @@ const ResultAndReportPage = () => {
     return value;
   };
 
+  // Senin istediğin yeni downloadPDF fonksiyonu
   const downloadPDF = () => {
     const element = reportRef.current;
 
@@ -54,10 +54,40 @@ const ResultAndReportPage = () => {
     html2pdf().set(opt).from(element).save();
   };
 
+  useEffect(() => {
+    if (tc && llmExplanation) {
+      fetch("http://localhost:5001/add_report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tc_no: tc,
+          report_text: llmExplanation,
+          name,
+          surname,
+          age,
+          gender,
+          evre: imagePrediction,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            console.log("Rapor başarıyla kaydedildi.");
+          } else {
+            console.error("Rapor kaydedilirken hata:", data.message);
+          }
+        })
+        .catch((err) => {
+          console.error("Rapor kaydetme hatası:", err);
+        });
+    }
+  }, [tc, llmExplanation]);
+
   return (
     <div className="report-page">
       <Chatbot />
       <div className="report-container" ref={reportRef}>
+        {/* ... (rapor içeriği aynı kalacak) */}
         <div className="header">
           <img src="/images/istun_logo.png" alt="Logo" className="logo" />
           <div className="title">
@@ -102,8 +132,7 @@ const ResultAndReportPage = () => {
             )}
             {imagePrediction !== undefined && (
               <p>
-                CNN Model Tahmini: {labelFromPrediction(imagePrediction)} (%{" "}
-                {confidence})
+                CNN Model Tahmini: {labelFromPrediction(imagePrediction)} (%{confidence})
               </p>
             )}
           </div>
@@ -111,9 +140,7 @@ const ResultAndReportPage = () => {
 
         <div className="section">
           <h4>YAPAY ZEKA YORUMU:</h4>
-          <div className="box markdown-box">
-            <ReactMarkdown>{llmExplanation || "Yorum yok."}</ReactMarkdown>
-          </div>
+          <div className="box">{llmExplanation || "Yorum yok."}</div>
         </div>
 
         <div className="section">
@@ -147,8 +174,8 @@ const ResultAndReportPage = () => {
         <div className="notes">
           <p>(*) Rapor tarihi: {currentDate}</p>
           <p>
-            (**) Fibrozis Evre Tahmini bölümünde Kan Değerleri ve Ultrason Görüntüsü
-            bilgileriyle eğitilmiş yapay zeka tahmin sonucu bulunmaktadır.
+            (**) Fibrozis Evre Tahmini bölümünde Kan Değerleri ve Ultrason Görüntüsü bilgileriyle
+            eğitilmiş yapay zeka tahmin sonu bulunmaktadır.
           </p>
         </div>
       </div>

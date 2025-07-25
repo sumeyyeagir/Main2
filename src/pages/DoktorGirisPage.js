@@ -9,7 +9,7 @@ const DoktorGirisPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setHastaSayisi(hastalar.length); // Gerçek sayıdan hesapla
+    setHastaSayisi(hastalar.length); // Gerçek hasta sayısını ayarla
   }, []);
 
   const handleSearch = () => {
@@ -27,19 +27,21 @@ const DoktorGirisPage = () => {
     }
   };
 
-  const rawData = [
-    { name: "F0", value: 5 },
-    { name: "F1", value: 3 },
-    { name: "F2", value: 4 },
-    { name: "F3", value: 5 },
-    { name: "F4", value: 8 },
-  ];
+  // EVRELERİN DİNAMİK HESABI (sıfır olan evreler filtreleniyor)
+  const evreler = ["F0", "F1", "F2", "F3", "F4"];
+
+  const rawData = evreler
+    .map((evre) => ({
+      name: evre,
+      value: hastalar.filter((h) => h.evre === evre).length,
+    }))
+    .filter((item) => item.value > 0);
 
   const total = rawData.reduce((sum, item) => sum + item.value, 0);
 
   const data = rawData.map((item) => ({
     ...item,
-    percent: ((item.value / total) * 100).toFixed(1),
+    percent: total === 0 ? 0 : ((item.value / total) * 100).toFixed(1),
   }));
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#AB47BC"];
@@ -109,22 +111,20 @@ const DoktorGirisPage = () => {
       </div>
 
       <div style={styles.gridTop}>
-              <div style={styles.squareCard}>
-        <div style={styles.centeredContent}>
-          <div style={styles.sayac}>{hastaSayisi}</div>
-          <h3 style={{ ...styles.centeredTitle, marginTop: "10px" }}>
-            Kayıtlı Hasta
-          </h3>
-          <button
-            style={styles.hastaButton}
-            onClick={() => navigate("/hasta-listesi")}
-          >
-            Tüm Hastaları Gör
-          </button>
+        <div style={styles.squareCard}>
+          <div style={styles.centeredContent}>
+            <div style={styles.sayac}>{hastaSayisi}</div>
+            <h3 style={{ ...styles.centeredTitle, marginTop: "10px" }}>
+              Kayıtlı Hasta
+            </h3>
+            <button
+              style={styles.hastaButton}
+              onClick={() => navigate("/hasta-listesi")}
+            >
+              Tüm Hastaları Gör
+            </button>
+          </div>
         </div>
-      </div>
-
-    
 
         <div style={styles.squareCard}>
           <h3 style={styles.centeredTitle}>Hasta Arama</h3>
@@ -239,13 +239,12 @@ const styles = {
     padding: "20px",
   },
   centeredTitle2: {
-  textAlign: "center", // 👈 Sağa hizalama
-  color: "#213448",
-  fontSize: "25px",
-  marginBottom: "12px",
-  marginTop: "20px",
-},
-
+    textAlign: "center",
+    color: "#213448",
+    fontSize: "25px",
+    marginBottom: "12px",
+    marginTop: "20px",
+  },
   squareCard: {
     backgroundColor: "white",
     borderRadius: "12px",
@@ -263,12 +262,12 @@ const styles = {
     marginTop: "80px",
   },
   chartTitle: {
-  fontSize: "25px",
-  color: "#213448",
-  textAlign: "center",
-  marginBottom: "10px",
-  marginTop: "80px",
-},
+    fontSize: "25px",
+    color: "#213448",
+    textAlign: "center",
+    marginBottom: "10px",
+    marginTop: "80px",
+  },
   centeredContent: {
     flex: 1,
     display: "flex",
@@ -340,15 +339,15 @@ const styles = {
     marginBottom: "12px",
   },
   hastaButton: {
-        marginTop: "20px",
-        padding: "10px 16px",
-        backgroundColor: "#213448",
-        color: "white",
-        border: "none",
-        borderRadius: "8px",
-        cursor: "pointer",
-        fontSize: "16px",
-      },
+    marginTop: "20px",
+    padding: "10px 16px",
+    backgroundColor: "#213448",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "16px",
+  },
 };
 
 export default DoktorGirisPage;

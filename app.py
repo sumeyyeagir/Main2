@@ -8,16 +8,22 @@ from PIL import Image
 import requests
 import base64
 import os
-
+import pdfplumber
+import sqlite3
+import json
 # Model paths
-RF_MODEL_PATH = r"C:\Users\ervae\Downloads\Main\rf_model.pkl"
-SCALER_PATH = r"C:\Users\ervae\Downloads\Main\scaler.pkl"
-CNN_MODEL_PATH = r"C:\Users\ervae\Downloads\Main\cnn_model.h5"
-API_KEY = "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"
-API_KEY2 = "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"
+RF_MODEL_PATH = "/Users/cengizhankaraman/Desktop/Son Güncel Proje/Main/rf_model.pkl"
+SCALER_PATH = "/Users/cengizhankaraman/Desktop/Son Güncel Proje/Main/scaler.pkl"
+CNN_MODEL_PATH = "/Users/cengizhankaraman/Desktop/Son Güncel Proje/Main/cnn_model.h5"
+
+API_KEY = "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"
+API_KEY2 = "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"
+
 class_labels = ['F0', 'F1', 'F2', 'F3', 'F4']
 
 app = Flask(__name__)
+UPLOAD_FOLDER = "raporlar"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 with open(SCALER_PATH, "rb") as f:
@@ -25,6 +31,67 @@ with open(SCALER_PATH, "rb") as f:
 with open(RF_MODEL_PATH, "rb") as f:
     rf_model = pickle.load(f)
 cnn_model = tf.keras.models.load_model(CNN_MODEL_PATH)
+
+DB_PATH = "users.db"
+
+# Veritabanı başlatma
+def init_db():
+    if not os.path.exists(DB_PATH):
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # users tablosu (login için)
+        cursor.execute("""
+            CREATE TABLE users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL
+            )
+        """)
+
+        # patients tablosu (hasta bilgileri)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS patients (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tc TEXT UNIQUE NOT NULL,
+                name TEXT,
+                surname TEXT,
+                age INTEGER,
+                gender TEXT,
+                evre TEXT       
+            )
+        """)
+
+        # reports tablosu: patient_id yerine tc_no tutulacak
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS reports (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tc_no TEXT NOT NULL,
+                report_name TEXT,
+                prediction_result TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Örnek kullanıcılar (login için)
+        sample_users = [
+            ("erva.ergul", "123456"),
+            ("busra.inan", "123456"),
+            ("ege.kuzu", "123456"),
+            ("kevser.semiz", "123456"),
+            ("helin.ozalkan", "123456"),
+            ("sumeyye.agir", "123456"),
+            ("efe.kesler", "123456"),
+            ("devran.sahin", "123456"),
+            ("cengizhan.karaman", "123456"),
+            ("enes.coban", "123456"),
+            ("kerem.guney", "123456"),
+        ]
+        cursor.executemany("INSERT INTO users (username, password) VALUES (?, ?)", sample_users)
+
+        conn.commit()
+        conn.close()
+        print("SQLite veritabanı ve kullanıcılar oluşturuldu.")
 
 @app.route("/")
 def home():
@@ -80,6 +147,108 @@ def get_vlm_analysis(image_path):
 
     except Exception as e:
         return f"VLM analysis error: {str(e)}"
+
+@app.route("/add_report", methods=["POST"])
+def add_report():
+    try:
+        data = request.get_json()
+        tc_no = data.get("tc_no")
+        report_text = data.get("report_text")
+        name = data.get("name")
+        surname = data.get("surname")
+        age = data.get("age")
+        gender = data.get("gender")
+        evre = data.get("evre") 
+
+        if not tc_no or not report_text:
+            return jsonify({"success": False, "message": "Eksik parametre."}), 400
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Eğer hasta daha önce yoksa yeni hasta olarak ekle
+        cursor.execute("SELECT id FROM patients WHERE tc = ?", (tc_no,))
+        patient = cursor.fetchone()
+        if not patient:
+            cursor.execute(
+                "INSERT INTO patients (tc, name, surname, age, gender, evre) VALUES (?, ?, ?, ?, ?, ?)",
+                (tc_no, name, surname, age, gender, evre)
+            )
+        else:
+            # Eğer varsa evre bilgisini güncelle (en güncel tahminle)
+            cursor.execute(
+                "UPDATE patients SET evre = ? WHERE tc = ?",
+                (evre, tc_no)
+            )
+
+        # Aynı rapor zaten var mı kontrol et
+        cursor.execute("""
+            SELECT 1 FROM reports
+            WHERE tc_no = ? AND report_name = ? AND prediction_result = ?
+        """, (tc_no, "Otomatik Rapor", report_text))
+        exists = cursor.fetchone()
+
+        if exists:
+            conn.commit()
+            conn.close()
+            return jsonify({"success": False, "message": "Aynı rapor zaten mevcut."}), 409
+
+        # Raporu ekle
+        cursor.execute(
+            "INSERT INTO reports (tc_no, report_name, prediction_result) VALUES (?, ?, ?)",
+            (tc_no, "Otomatik Rapor", report_text)
+        )
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({"success": True, "message": "Rapor kaydedildi."})
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+def export_patients_to_js():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, tc, evre FROM patients")
+    patients = cursor.fetchall()
+    conn.close()
+
+    data = [{"ad": name, "tc": tc, "evre": evre} for (name, tc, evre) in patients]
+
+    with open("/Users/cengizhankaraman/Desktop/Son Güncel Proje/Main/src/pages/hastalar.js", "w", encoding="utf-8") as f:
+        f.write("const hastalar = ")
+        f.write(json.dumps(data, ensure_ascii=False, indent=2))
+        f.write(";\n\nexport default hastalar;")
+
+export_patients_to_js()
+
+
+
+@app.route("/get_reports/<tc_no>", methods=["GET"])
+def get_reports(tc_no):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT report_name, prediction_result, created_at FROM reports WHERE tc_no = ?", (tc_no,))
+        reports = cursor.fetchall()
+        conn.close()
+
+        report_list = [
+            {
+                "report_name": r[0],
+                "prediction_result": r[1],
+                "created_at": r[2]
+            }
+            for r in reports
+        ]
+
+        return jsonify({"tc_no": tc_no, "reports": report_list})
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -190,6 +359,26 @@ Bu bilgilere dayanarak:
     except Exception as e:
         print(f"\nError in predict endpoint: {str(e)}")
         return jsonify({"error": str(e)}), 500
+@app.route("/patients", methods=["GET"])
+def get_patients():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT name, tc, evre FROM patients")
+    rows = cursor.fetchall()
+    conn.close()
+
+    # Verileri dict formatına çevir
+    patients = [{"ad": row[0], "tc": row[1], "evre": row[2]} for row in rows]
+    return jsonify(patients)
+
+import sqlite3
+import json
+
+
+
+
+
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -238,17 +427,11 @@ def parse_pdf():
         if not file:
             return jsonify({"error": "PDF dosyası yüklenmedi."}), 400
 
-        # PDF dosyasını işlemek için PyPDF2 veya pdfplumber gibi bir kütüphane kullanılabilir
-        import pdfplumber
         pdf_text = ""
         with pdfplumber.open(file) as pdf:
             for page in pdf.pages:
                 pdf_text += page.extract_text() or ""
 
-        # PDF içeriğini logla
-        print("PDF İçeriği:\n", pdf_text)
-
-        # Regex ifadelerini PDF formatına uygun şekilde güncelledim
         import re
         result = {
             "ast": re.search(r"Aspartat transaminaz.*?(\d+)\s*U/L", pdf_text).group(1) if re.search(r"Aspartat transaminaz.*?(\d+)\s*U/L", pdf_text) else None,
@@ -264,9 +447,34 @@ def parse_pdf():
 
     except Exception as e:
         import traceback
-        print("Hata:", traceback.format_exc())  # Hata detaylarını logla
+        print("Hata:", traceback.format_exc())
         return jsonify({"error": str(e)}), 500
+
+@app.route("/login", methods=["POST"])
+def login():
+    try:
+        data = request.get_json()
+        username = data.get("username")
+        password = data.get("password")
+
+        if not username or not password:
+            return jsonify({"success": False, "message": "Kullanıcı adı veya şifre boş."}), 400
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            return jsonify({"success": True, "message": "Giriş başarılı"})
+        else:
+            return jsonify({"success": False, "message": "Kullanıcı adı veya şifre yanlış."}), 401
+
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Hata: {str(e)}"}), 500
 
 if __name__ == "__main__":
     print("Starting Liver Fibrosis Prediction API...")
+    init_db()
     app.run(debug=True, port=5001)

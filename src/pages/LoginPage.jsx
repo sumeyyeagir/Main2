@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,44 +9,41 @@ const LoginPage = ({ onLogin }) => {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
 
-  const users = [
-    { username: "erva.ergul", password: "123456" },
-    { username: "busra.inan", password: "123456" },
-    { username: "ege.kuzu", password: "123456" },
-    { username: "kevser.semiz", password: "123456" },
-    { username: "helin.ozalkan", password: "123456" },
-    { username: "sumeyye.agir", password: "123456" },
-    { username: "efe.kesler", password: "123456" },
-    { username: "devran.sahin", password: "123456" },
-    { username: "cengizhan.karaman", password: "123456" },
-    { username: "enes.coban", password: "123456" },
-    { username: "kerem.guney", password: "123456" },
-  ];
-
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
-      setError("Lütfen kullanıcı adı ve şifreyi boş bırakmayınız.");
+      setError("Lütfen kullanıcı adı ve şifreyi giriniz.");
       return;
     }
-  
-    const foundUser = users.find(
-      (user) => user.username === username && user.password === password
-    );
-  
-    if (foundUser) {
-      setError("");
-      localStorage.setItem("userName", username); 
-      onLogin(); 
-      navigate("/"); 
-    } else {
-      setError("Kullanıcı adı veya şifre yanlış.");
+
+    try {
+      const response = await fetch("http://localhost:5001/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setError("");
+        localStorage.setItem("userName", username);
+        onLogin(); // Üst component'e haber ver
+        navigate("/");
+      } else {
+        setError(result.message || "Giriş başarısız.");
+      }
+    } catch (error) {
+      setError("Sunucuya bağlanılamadı.");
     }
   };
-  
 
   return (
     <div style={styles.container}>
-      
+      <img
+        src="/images/karaciger.png"
+        alt="Karaciğer Görseli"
+        style={styles.sideImage}
+      />
 
       <div
         style={{
@@ -55,9 +53,9 @@ const LoginPage = ({ onLogin }) => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <img src="/images/logo.png" alt="Logo" style={styles.logo} />
-        <h3 style={styles.logoyazi}>FibroCheck</h3>
-        <h2 style={styles.title}>"Bilim, Erken Teşhis ile Başlar!"</h2>
+        <img src="/images/logo.jpeg" alt="Logo" style={styles.logo} />
+        <h2 style={styles.title}>"Bilim Erken Teşhisle Başlar!"</h2>
+
         <input
           type="text"
           placeholder="Kullanıcı Adı"
@@ -92,7 +90,7 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    backgroundImage: "linear-gradient(135deg, #e3d1b5ff 0%, #dce1e7 100%)",
+    backgroundImage: "linear-gradient(135deg, #f0f2f5 0%, #dce1e7 100%)",
     padding: "20px",
   },
   sideImage: {
@@ -103,11 +101,11 @@ const styles = {
   },
   card: {
     width: "100%",
-    maxWidth: "450px",
-    backgroundColor: "#edebebff", 
+    maxWidth: "400px",
+    backgroundColor: "#f9f9f9",
     padding: "40px",
     borderRadius: "25px",
-    boxShadow: "0 12px 24pxrgba(91, 59, 7, 0.61)",
+    boxShadow: "0 12px 24px rgba(91, 59, 7, 0.61)",
     border: "10px solid #A08963",
     display: "flex",
     flexDirection: "column",
@@ -121,22 +119,14 @@ const styles = {
     cursor: "pointer",
   },
   logo: {
-    height: "85px",
-    marginBottom: "-23px",
-    border: "3px solid #A08963",
-    borderRadius: "27px",
-  },
-  logoyazi: {
-    marginBottom: "10px",
-    color: "#213448",
-    fontSize: "28px",
-    fontWeight: "900",
+    height: "50px",
+    marginBottom: "15px",
   },
   title: {
-    marginBottom: "25px",
+    marginBottom: "20px",
     color: "#213448",
     fontSize: "24px",
-    fontWeight: "540",
+    fontWeight: "700",
   },
   input: {
     width: "100%",
@@ -177,4 +167,4 @@ const styles = {
   },
 };
 
-export default LoginPage; 
+export default LoginPage;
