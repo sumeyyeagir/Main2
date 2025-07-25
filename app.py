@@ -12,12 +12,12 @@ import pdfplumber
 import sqlite3
 import json
 # Model paths
-RF_MODEL_PATH = "/Users/cengizhankaraman/Desktop/Son Güncel Proje/Main/rf_model.pkl"
-SCALER_PATH = "/Users/cengizhankaraman/Desktop/Son Güncel Proje/Main/scaler.pkl"
-CNN_MODEL_PATH = "/Users/cengizhankaraman/Desktop/Son Güncel Proje/Main/cnn_model.h5"
+RF_MODEL_PATH = "/Users/busrainan/Desktop/New 7/Main/rf_model.pkl"
+SCALER_PATH = "/Users/busrainan/Desktop/New 7/Main/scaler.pkl"
+CNN_MODEL_PATH = "/Users/busrainan/Desktop/New 7/Main/cnn_model.h5"
 
-API_KEY = "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"
-API_KEY2 = "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"
+API_KEY = "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"
+API_KEY2 = "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"
 
 class_labels = ['F0', 'F1', 'F2', 'F3', 'F4']
 
@@ -206,7 +206,7 @@ def add_report():
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
-
+"""
 def export_patients_to_js():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -222,7 +222,7 @@ def export_patients_to_js():
         f.write(";\n\nexport default hastalar;")
 
 export_patients_to_js()
-
+"""
 
 
 @app.route("/get_reports/<tc_no>", methods=["GET"])

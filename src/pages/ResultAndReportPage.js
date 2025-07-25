@@ -5,6 +5,8 @@ import "./ResultAndReportPage.css";
 // import jsPDF from "jspdf";
 import html2pdf from "html2pdf.js";  // html2pdf'yi import ettik
 import Chatbot from "../components/Chatbot";
+import Markdown from "markdown-to-jsx"; // en üste ekle (eğer eklenmediyse)
+
 
 const ResultAndReportPage = () => {
   const reportRef = useRef();
@@ -138,10 +140,11 @@ const ResultAndReportPage = () => {
           </div>
         </div>
 
-        <div className="section">
-          <h4>YAPAY ZEKA YORUMU:</h4>
-          <div className="box">{llmExplanation || "Yorum yok."}</div>
-        </div>
+          <div className="markdown-box">
+    <Markdown options={{ forceBlock: true }}>
+      {llmExplanation || "Yorum yok."}
+    </Markdown>
+  </div>
 
         <div className="section">
           <h4>KAN DEĞERLERİ:</h4>
