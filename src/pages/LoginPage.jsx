@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -35,9 +34,9 @@ const LoginPage = ({ onLogin }) => {
   
     if (foundUser) {
       setError("");
-      localStorage.setItem("userName", username); // ← Kullanıcı adı saklanıyor
-      onLogin(); // üst component'e bilgi verir (isteğe bağlı)
-      navigate("/"); // ana sayfaya yönlendirme
+      localStorage.setItem("userName", username); 
+      onLogin(); 
+      navigate("/"); 
     } else {
       setError("Kullanıcı adı veya şifre yanlış.");
     }
@@ -46,11 +45,7 @@ const LoginPage = ({ onLogin }) => {
 
   return (
     <div style={styles.container}>
-      <img
-        src="/images/karaciger.png"
-        alt="Karaciğer Görseli"
-        style={styles.sideImage}
-      />
+      
 
       <div
         style={{
@@ -60,9 +55,9 @@ const LoginPage = ({ onLogin }) => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <img src="/images/logo.jpeg" alt="Logo" style={styles.logo} />
-        <h2 style={styles.title}>"Bilim Erken Teşhisle Başlar!"</h2>
-
+        <img src="/images/logo.png" alt="Logo" style={styles.logo} />
+        <h3 style={styles.logoyazi}>FibroCheck</h3>
+        <h2 style={styles.title}>"Bilim, Erken Teşhis ile Başlar!"</h2>
         <input
           type="text"
           placeholder="Kullanıcı Adı"
@@ -97,7 +92,7 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    backgroundImage: "linear-gradient(135deg, #f0f2f5 0%, #dce1e7 100%)",
+    backgroundImage: "linear-gradient(135deg, #e3d1b5ff 0%, #dce1e7 100%)",
     padding: "20px",
   },
   sideImage: {
@@ -108,8 +103,8 @@ const styles = {
   },
   card: {
     width: "100%",
-    maxWidth: "400px",
-    backgroundColor: "#f9f9f9", // Kart beyaz
+    maxWidth: "450px",
+    backgroundColor: "#edebebff", 
     padding: "40px",
     borderRadius: "25px",
     boxShadow: "0 12px 24pxrgba(91, 59, 7, 0.61)",
@@ -126,14 +121,22 @@ const styles = {
     cursor: "pointer",
   },
   logo: {
-    height: "50px",
-    marginBottom: "15px",
+    height: "85px",
+    marginBottom: "-23px",
+    border: "3px solid #A08963",
+    borderRadius: "27px",
+  },
+  logoyazi: {
+    marginBottom: "10px",
+    color: "#213448",
+    fontSize: "28px",
+    fontWeight: "900",
   },
   title: {
-    marginBottom: "20px",
+    marginBottom: "25px",
     color: "#213448",
     fontSize: "24px",
-    fontWeight: "700",
+    fontWeight: "540",
   },
   input: {
     width: "100%",
@@ -142,7 +145,7 @@ const styles = {
     borderRadius: "8px",
     border: "1px solid #ccc",
     fontSize: "14px",
-    backgroundColor: "#f2f3f5", // Açık gri kutucuk
+    backgroundColor: "#f2f3f5",
     color: "#333",
     boxShadow: "inset 1px 1px 2px rgba(0,0,0,0.05)",
     transition: "border-color 0.3s ease",

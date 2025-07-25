@@ -15,7 +15,7 @@ from PIL import Image
 # 🔹 Klinik Verilerle RF Model Eğitimi 🔹
 print("🎓 Klinik veriler yükleniyor ve model eğitiliyor...")
 
-df = pd.read_csv("/Users/busrainan/Desktop/new5/Main/DataSets/Liver Patient Dataset (LPD)_train.csv", encoding='ISO-8859-1')
+df = pd.read_csv(r"C:\Users\ervae\Downloads\Main\DataSets\Liver Patient Dataset (LPD)_train.csv", encoding='ISO-8859-1')
 df.columns = df.columns.str.strip().str.replace('\xa0', ' ').str.replace('  ', ' ')
 df['Gender of the patient'] = 0
 df['Result'] = df['Result'].map({1: 1, 2: 0})
@@ -83,7 +83,7 @@ labels = []
    # with ZipFile("", 'r') as zip_ref:
     #    zip_ref.extractall("liver_data")
 
-image_folder = "/Users/busrainan/Desktop/new5/Main/Dataset-2"
+image_folder = r"C:\Users\ervae\Downloads\Main\Dataset-2"
 for label in class_labels:
     class_folder = os.path.join(image_folder, label)
     if os.path.exists(class_folder):
