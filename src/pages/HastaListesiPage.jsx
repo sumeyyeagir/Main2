@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-
+import { useNavigate } from "react-router-dom"; 
+import PersonalInfoBar2 from "../components/PersonalInfoBar2";
 const HastaListesiPage = () => {
   const [arama, setArama] = useState("");
   const [hastalar, setHastalar] = useState([]);
-
+  const navigate = useNavigate();
+  
   // Veriyi fetch et
   useEffect(() => {
     fetch("http://localhost:5001/patients")
@@ -16,15 +18,14 @@ const HastaListesiPage = () => {
       });
   }, []);
 
-  const filtrelenmisHastalar = hastalar.filter((hasta) =>
-    hasta.ad.toLowerCase().includes(arama.toLowerCase())
-  );
+  const filtrelenmisHastalar = hastalar.filter((hasta) => {
+    const adSoyad = `${hasta.ad} ${hasta.soyad}`.toLowerCase();
+    return adSoyad.includes(arama.toLowerCase());
+  });
 
   return (
     <div style={styles.page}>
-      <div style={styles.navbar}>
-        <h2 style={styles.navTitle}>Doktor Paneli</h2>
-      </div>
+      <PersonalInfoBar2 onLogout={() => navigate("/")} />
 
       <div style={styles.content}>
         <h2 style={styles.header}>Toplam Hasta Listesi</h2>
@@ -53,7 +54,7 @@ const HastaListesiPage = () => {
                     key={index}
                     style={index % 2 === 0 ? styles.trEven : styles.trOdd}
                   >
-                    <td style={styles.td}>{hasta.ad}</td>
+                    <td style={styles.td}>{`${hasta.ad} ${hasta.soyad}`}</td>
                     <td style={styles.td}>{hasta.tc}</td>
                     <td style={styles.td}>{hasta.evre}</td>
                   </tr>

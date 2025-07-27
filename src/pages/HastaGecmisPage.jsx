@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import hastalar from "./hastalar";
 import Markdown from "markdown-to-jsx";
+import PersonalInfoBar2 from "../components/PersonalInfoBar2";
 import {
   LineChart,
   Line,
@@ -17,12 +18,21 @@ const HastaGecmisPage = () => {
   const { tc } = location.state || { tc: null };
   const [raporlar, setRaporlar] = useState([]);
   const [expandedIndex, setExpandedIndex] = useState(null); // 👈 hangi rapor açık?
+  const [hasta, setHasta] = useState(null); 
 
-  const hasta = hastalar.find((h) => h.tc === String(tc));
-  const adSoyad = hasta ? hasta.ad : "Bilinmiyor";
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (tc) {
+      // Hasta bilgisi çek (ad soyad vs)
+       fetch(`http://localhost:5001/patients/${tc}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setHasta(data);
+        })
+        .catch((err) => console.error("Hasta bilgisi çekme hatası:", err));
+
+      // Raporları çek
       fetch(`http://localhost:5001/get_reports/${tc}`)
         .then((res) => res.json())
         .then((data) => {
@@ -128,14 +138,12 @@ const HastaGecmisPage = () => {
   };
   return (
     <div style={styles.page}>
-      <div style={styles.navbar}>
-        <h2 style={styles.navTitle}>Doktor Paneli</h2>
-      </div>
+      <PersonalInfoBar2 onLogout={() => navigate("/")} />
 
       <div style={styles.content}>
         <h2 style={styles.header}>Geçmiş Sonuçlar</h2>
         <h4 style={styles.subHeader}>Hasta TC: {tc || "TC bulunamadı"}</h4>
-        <h4 style={styles.subHeader}>Ad Soyad: {adSoyad}</h4>
+        <h4 style={styles.subHeader}>Ad Soyad:{hasta ? `${hasta.ad} ${hasta.soyad}` : "Bilinmiyor"} </h4>
         <div style={styles.chartsRow}>
           <div style={styles.chartBoxSmall}>
             <h3 style={styles.chartTitle}>Evre Değişimi</h3>
@@ -236,16 +244,6 @@ const styles = {
     minHeight: "100vh",
     width: "100vw",
     overflowX: "hidden",
-  },
-  navbar: {
-    backgroundColor: "#213448",
-    padding: "20px",
-    color: "white",
-    textAlign: "center",
-  },
-  navTitle: {
-    margin: 0,
-    fontSize: "26px",
   },
   content: {
     padding: "30px",

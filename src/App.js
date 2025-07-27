@@ -8,6 +8,8 @@ import DoktorGirisPage from "./pages/DoktorGirisPage";
 import HastaListesiPage from "./pages/HastaListesiPage"; // ✅ Yeni eklenen sayfa
 import HastaGecmisPage from "./pages/HastaGecmisPage"; // en üste import et
 import EvreDetayPage from "./pages/EvreDetayPage";
+import NotEklePage from "./pages/NotEklePage"; 
+import NotDetayPage from "./pages/NotDetayPage.jsx";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -44,6 +46,8 @@ function App() {
             <Route path="/doktor-giris" element={<DoktorGirisPage />} />
             <Route path="/hasta-listesi" element={<HastaListesiPage />} /> {/* ✅ Yeni rota */}
             <Route path="/hasta-gecmis" element={<HastaGecmisPage />} />
+            <Route path="/not-ekle" element={<NotEklePage />} />
+            <Route path="/not-detay" element={<NotDetayPage />} />
 <Route path="/evre-detay" element={<EvreDetayPage />} />
 
             {/* Bilinmeyen yollar anasayfaya yönlendirilir */}

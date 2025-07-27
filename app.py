@@ -12,12 +12,12 @@ import pdfplumber
 import sqlite3
 import json
 # Model paths
-RF_MODEL_PATH = "/Users/busrainan/Desktop/New 7/Main/rf_model.pkl"
-SCALER_PATH = "/Users/busrainan/Desktop/New 7/Main/scaler.pkl"
-CNN_MODEL_PATH = "/Users/busrainan/Desktop/New 7/Main/cnn_model.h5"
+RF_MODEL_PATH = r"E:\Main-main\rf_model.pkl"
+SCALER_PATH = r"E:\Main-main\scaler.pkl"
+CNN_MODEL_PATH = r"E:\Main-main\cnn_model.h5"
 
-API_KEY = "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"
-API_KEY2 = "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"
+API_KEY = "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"
+API_KEY2 = "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"
 
 class_labels = ['F0', 'F1', 'F2', 'F3', 'F4']
 
@@ -206,24 +206,30 @@ def add_report():
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
-"""
-def export_patients_to_js():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT name, tc, evre FROM patients")
-    patients = cursor.fetchall()
-    conn.close()
 
-    data = [{"ad": name, "tc": tc, "evre": evre} for (name, tc, evre) in patients]
+@app.route("/patients/<tc>", methods=["GET"])
+def get_patient(tc):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
 
-    with open("/Users/cengizhankaraman/Desktop/Son Güncel Proje/Main/src/pages/hastalar.js", "w", encoding="utf-8") as f:
-        f.write("const hastalar = ")
-        f.write(json.dumps(data, ensure_ascii=False, indent=2))
-        f.write(";\n\nexport default hastalar;")
+        cursor.execute("SELECT name, surname, tc, evre FROM patients WHERE tc = ?", (tc,))
+        row = cursor.fetchone()
+        conn.close()
 
-export_patients_to_js()
-"""
+        if row:
+            patient = {
+                "name": row[0],
+                "surname": row[1],
+                "tc": row[2],
+                "evre": row[3],
+            }
+            return jsonify(patient)
+        else:
+            return jsonify({"error": "Hasta bulunamadı"}), 404
 
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/get_reports/<tc_no>", methods=["GET"])
 def get_reports(tc_no):
@@ -374,11 +380,6 @@ def get_patients():
 
 import sqlite3
 import json
-
-
-
-
-
 
 @app.route("/chat", methods=["POST"])
 def chat():

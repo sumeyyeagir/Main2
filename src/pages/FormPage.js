@@ -267,9 +267,9 @@ const FormPage = ({ onLogout, onFormSubmit }) => {
               maxWidth: "570px",
               padding: "16px",
               backgroundColor: "#f9f4ec",
-              border: "2px solid rgba(72, 55, 35, 0.2)",
+              border: "2px solid #c6b08c",
               borderRadius: "10px",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+              boxShadow: "0 4px 12px #A08963",
               fontFamily: "Poppins, sans-serif",
               color: "#213448",
               textAlign: "left",
@@ -379,7 +379,7 @@ const FormPage = ({ onLogout, onFormSubmit }) => {
                   borderRadius: "8px",
                   cursor: "pointer",
                   fontSize: "16px",
-                  fontWeight: "600",
+                  fontWeight: "400",
                   boxShadow: "0 4px 8px rgba(33, 52, 72, 0.3)",
                   transition: "all 0.3s ease",
                 }}
@@ -427,7 +427,7 @@ const FormPage = ({ onLogout, onFormSubmit }) => {
               )}
 
 
-<p style={{ color: "#c0392b", fontSize: "13px", marginTop: "8px", fontFamily: "Poppins, sans-serif" }}>
+<p style={{ color: "#913025ff", fontSize: "13px", marginTop: "8px", fontFamily: "Poppins, sans-serif" }}>
   *Kan değerlerini içeren PDF dosyasını yüklerseniz, manuel veri girişine gerek kalmaz. Sistem otomatik olarak değerleri algılar.
   
 </p>

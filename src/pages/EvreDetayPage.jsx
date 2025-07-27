@@ -1,18 +1,26 @@
-import React from "react";
-import { useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import hastalar from "./hastalar";
+import PersonalInfoBar2 from "../components/PersonalInfoBar2";
 
 const EvreDetayPage = () => {
   const location = useLocation();
   const { evre } = location.state || { evre: "Bilinmiyor" };
+  const [hastalar, setHastalar] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch("http://localhost:5001/patients")
+      .then((res) => res.json())
+      .then((data) => setHastalar(data))
+      .catch((err) => console.error("Veri çekme hatası:", err));
+  }, []);
 
   const filtreliListe = hastalar.filter((h) => h.evre === evre);
 
   return (
     <div style={styles.page}>
-      <div style={styles.navbar}>
-        <h2 style={styles.navTitle}>Doktor Paneli</h2>
-      </div>
+      <PersonalInfoBar2 onLogout={() => navigate("/")} />
 
       <div style={styles.content}>
         <h2 style={styles.header}>{evre} Evresine Ait Hastalar</h2>
@@ -32,7 +40,7 @@ const EvreDetayPage = () => {
               <tbody>
                 {filtreliListe.map((h, i) => (
                   <tr key={i} style={i % 2 === 0 ? styles.trEven : styles.trOdd}>
-                    <td style={styles.td}>{h.ad}</td>
+                    <td style={styles.td}>{`${h.ad} ${h.soyad}`}</td>
                     <td style={styles.td}>{h.tc}</td>
                     <td style={styles.td}>2025-07-25</td> {/* Sabit tarih */}
                   </tr>
@@ -53,16 +61,6 @@ const styles = {
     minHeight: "100vh",
     width: "100vw",
     overflowX: "hidden",
-  },
-  navbar: {
-    backgroundColor: "#213448",
-    padding: "20px",
-    color: "white",
-    textAlign: "center",
-  },
-  navTitle: {
-    margin: 0,
-    fontSize: "26px",
   },
   content: {
     padding: "30px",

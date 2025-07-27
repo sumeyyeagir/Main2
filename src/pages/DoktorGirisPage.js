@@ -1,16 +1,53 @@
 import React, { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip, LabelList } from "recharts";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
 import hastalar from "./hastalar";
+import PersonalInfoBar2 from "../components/PersonalInfoBar2";
 
 const DoktorGirisPage = () => {
-  const [hastaSayisi, setHastaSayisi] = useState(0);
+  const [hastalar, setHastalar] = useState([]);
   const [tc, setTc] = useState("");
+  const [notlar, setNotlar] = useState(() => {
+    const local = localStorage.getItem("notlar");
+    return local ? JSON.parse(local) : [];
+  });
+
   const navigate = useNavigate();
+  const location = useLocation();
+
+useEffect(() => {
+    fetch("http://localhost:5001/patients")
+      .then((res) => res.json())
+      .then((data) => {
+        setHastalar(data);
+      })
+      .catch((error) => {
+        console.error("Hasta verileri alınamadı:", error);
+      });
+  }, []);
+
+useEffect(() => {
+    fetch("http://localhost:5001/patients")
+      .then((res) => res.json())
+      .then((data) => {
+        setHastalar(data);
+      })
+      .catch((error) => {
+        console.error("Hasta verileri alınamadı:", error);
+      });
+  }, []);
 
   useEffect(() => {
-    setHastaSayisi(hastalar.length); // Gerçek hasta sayısını ayarla
-  }, []);
+    if (location.state?.yeniNot) {
+      const yeni = location.state.yeniNot;
+      const guncelNotlar = [yeni, ...notlar];
+      setNotlar(guncelNotlar);
+      localStorage.setItem("notlar", JSON.stringify(guncelNotlar));
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
 
   const handleSearch = () => {
     const hasta = hastalar.find((h) => h.tc === tc.trim());
@@ -106,14 +143,12 @@ const DoktorGirisPage = () => {
 
   return (
     <div style={styles.page}>
-      <div style={styles.navbar}>
-        <h2 style={styles.navTitle}>Doktor Paneli</h2>
-      </div>
+      <PersonalInfoBar2 onLogout={() => navigate("/")} />
 
       <div style={styles.gridTop}>
         <div style={styles.squareCard}>
           <div style={styles.centeredContent}>
-            <div style={styles.sayac}>{hastaSayisi}</div>
+            <div style={styles.sayac}>{hastalar}</div>
             <h3 style={{ ...styles.centeredTitle, marginTop: "10px" }}>
               Kayıtlı Hasta
             </h3>
@@ -168,7 +203,6 @@ const DoktorGirisPage = () => {
                 ))}
                 <LabelList content={renderInnerPercentage} />
               </Pie>
-              <Tooltip content={<CustomTooltip />} />
             </PieChart>
 
             <div style={styles.legendList}>
@@ -189,12 +223,28 @@ const DoktorGirisPage = () => {
       </div>
 
       <div style={styles.gridBottom}>
+        {/* Notlar */}
         <div style={styles.card}>
           <h3 style={styles.cardTitle}>📝 Notlar</h3>
-          <p>- Hastaların raporları güncellenmeli</p>
-          <p>- Takım toplantısı: 15:00</p>
-          <p>- F1 evresi için analiz bekleniyor</p>
-          <p>- Yeni veri seti eklenecek</p>
+          <div style={styles.notesContainer}>
+            {notlar.length === 0 ? (
+              <p style={{ color: "#666" }}>Henüz not eklenmemiş.</p>
+            ) : (
+              notlar.map((not, index) => (
+                <div
+                  key={index}
+                  style={{ marginBottom: "30px", cursor: "pointer",  }}
+                  onClick={() => navigate("/not-detay", { state: { not } })}
+                >
+                  <strong>{not.baslik}</strong>
+                  <div style={{ fontSize: "12px", color: "#777" }}>{not.tarih}</div>
+                </div>
+              ))
+            )}
+          </div>
+          <button style={styles.buttonSmall} onClick={() => navigate("/not-ekle")}>
+            + Yeni Not Ekle
+          </button>
         </div>
 
         <div style={styles.card}>
@@ -211,24 +261,14 @@ const DoktorGirisPage = () => {
 const styles = {
   page: {
     fontFamily: "sans-serif",
-    backgroundColor: "#f4f6f8",
+    background: "linear-gradient(135deg, #e3d1b5ff 0%, #dce1e7 100%)",
     minHeight: "100vh",
     width: "100vw",
     overflowX: "hidden",
   },
-  navbar: {
-    backgroundColor: "#213448",
-    padding: "20px",
-    color: "white",
-    textAlign: "center",
-  },
-  navTitle: {
-    margin: 0,
-    fontSize: "26px",
-  },
   gridTop: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
     gap: "20px",
     padding: "20px",
   },
@@ -246,12 +286,14 @@ const styles = {
     marginTop: "20px",
   },
   squareCard: {
-    backgroundColor: "white",
-    borderRadius: "12px",
-    padding: "20px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-    height: "300px",
+    backgroundColor: "#edebebff",
+    borderRadius: "20px",
+    border: "3px solid #A08963",
+    padding: "2px",
+    boxShadow: "0 12px 24px rgba(91, 59, 7, 0.3)",
+    height: "auto",
     display: "flex",
+    alignItems: "center",
     flexDirection: "column",
   },
   centeredTitle: {
@@ -283,7 +325,7 @@ const styles = {
     flexWrap: "wrap",
   },
   sayac: {
-    fontSize: "42px",
+    fontSize: "70px",
     fontWeight: "bold",
     color: "#213448",
   },
@@ -293,6 +335,7 @@ const styles = {
     border: "1px solid #ccc",
     borderRadius: "8px",
     width: "200px",
+    border: "1.5px solid #A08963",
   },
   tcButton: {
     padding: "10px 20px",
@@ -309,6 +352,9 @@ const styles = {
     alignItems: "center",
     gap: "20px",
     flexWrap: "wrap",
+    flexDirection: "row",
+    height: "100%",
+    textAlign: "left",
   },
   legendList: {
     display: "flex",
@@ -328,14 +374,19 @@ const styles = {
     display: "inline-block",
   },
   card: {
-    backgroundColor: "white",
-    borderRadius: "12px",
+    backgroundColor: "#edebebff",
+    borderRadius: "20px",
+    border: "3px solid #A08963",
     padding: "20px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    boxShadow: "0 12px 24px rgba(91, 59, 7, 0.3)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
   },
+
   cardTitle: {
     color: "#213448",
-    fontSize: "20px",
+    fontSize: "25px",
     marginBottom: "12px",
   },
   hastaButton: {
@@ -347,6 +398,17 @@ const styles = {
     borderRadius: "8px",
     cursor: "pointer",
     fontSize: "16px",
+  },
+  buttonSmall: { 
+    padding: "10px 20px",
+    backgroundColor: "#A08963", 
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "16px",
+    width: "100%",
+    marginTop: "auto", 
   },
 };
 

@@ -41,7 +41,7 @@ const PersonalInfoBar = ({ onLogout }) => {
         alignItems: "center",
         justifyContent: "space-between",
         width: "100vw",
-        height: "80px",
+        height: "60px",
         boxSizing: "border-box",
         position: "relative",
       }}
@@ -55,13 +55,23 @@ const PersonalInfoBar = ({ onLogout }) => {
           transformOrigin: "left center",
         }}
       />
-
+      <div
+        style={{
+          flex: 0.3,
+          textAlign: "center",
+          fontStyle: "italic",
+          fontSize: "35px",
+          color: "#ffffffff",
+        }}
+      >
+        FibroCheck
+      </div>
       <div
         style={{
           flex: 1,
           textAlign: "center",
           fontStyle: "italic",
-          fontSize: "25px",
+          fontSize: "30px",
           color: "#ffffffff",
         }}
       >
