@@ -40,21 +40,25 @@ const ResultAndReportPage = () => {
     return value;
   };
 
-  // Senin istediğin yeni downloadPDF fonksiyonu
   const downloadPDF = () => {
     const element = reportRef.current;
-
+  
     const opt = {
-      margin: 10,
+      margin: [10, 10, 10, 10], // üst, sağ, alt, sol
       filename: "saglik-raporu.pdf",
       image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
+      html2canvas: {
+        scale: 2,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: element.scrollWidth, // 🎯 Genişliği tam al
+      },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       pagebreak: { mode: ["avoid-all", "css", "legacy"] },
     };
-
+  
     html2pdf().set(opt).from(element).save();
-  };
+  };
 
   useEffect(() => {
     if (tc && llmExplanation) {

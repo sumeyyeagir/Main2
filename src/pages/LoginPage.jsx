@@ -57,19 +57,21 @@ const LoginPage = ({ onLogin }) => {
         <h3 style={styles.logoyazi}>FibroCheck</h3>
         <h2 style={styles.title}>"Bilim, Erken Teşhis ile Başlar!"</h2>
         <input
-          type="text"
-          placeholder="Kullanıcı Adı"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          style={styles.input}
-        />
-        <input
-          type="password"
-          placeholder="Şifre"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
-        />
+  type="text"
+  placeholder="Kullanıcı Adı"
+  value={username}
+  onChange={(e) => setUsername(e.target.value)}
+  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+  style={styles.input}
+/>
+<input
+  type="password"
+  placeholder="Şifre"
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+  style={styles.input}
+/>
 
         {error && <div style={styles.errorText}>{error}</div>}
 

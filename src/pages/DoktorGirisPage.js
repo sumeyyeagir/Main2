@@ -166,12 +166,13 @@ useEffect(() => {
           <div style={styles.centeredContent}>
             <div style={styles.centeredSearchBox}>
               <input
-                type="text"
-                placeholder="TC Kimlik Numarası"
-                value={tc}
-                onChange={(e) => setTc(e.target.value)}
-                style={styles.tcInput}
-              />
+  type="text"
+  placeholder="TC Kimlik Numarası"
+  value={tc}
+  onChange={(e) => setTc(e.target.value)}
+  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+  style={styles.tcInput}
+/>
               <button onClick={handleSearch} style={styles.tcButton}>
                 Ara
               </button>
