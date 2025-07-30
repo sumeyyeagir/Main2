@@ -87,7 +87,7 @@ const styles = {
     padding: "10px",
     fontSize: "16px",
     borderRadius: "6px",
-    border: "1px solid #A08963",
+    border: "1px solid #000000ff",
     height: "100px",
     resize: "none",
   },

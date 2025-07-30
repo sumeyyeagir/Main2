@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import SystemInfoModal from "./SystemInfoModal";
 
 const PersonalInfoBar = ({ onLogout }) => {
   const [userName, setUserName] = useState("");
@@ -9,6 +10,7 @@ const PersonalInfoBar = ({ onLogout }) => {
   const [passwordPopup, setPasswordPopup] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,6 +18,12 @@ const PersonalInfoBar = ({ onLogout }) => {
     if (storedName) {
       setUserName(storedName);
     }
+    const modalKey = `hasSeenSystemInfoModal_${storedName || "guest"}`;
+    const hasSeenModal = localStorage.getItem(modalKey);
+    if (!hasSeenModal) {
+      setShowModal(true);
+      localStorage.setItem(modalKey, "true");
+    }
   }, []);
 
   const firstLetter = userName?.charAt(0).toUpperCase();
@@ -138,7 +146,7 @@ const PersonalInfoBar = ({ onLogout }) => {
             </div>
             <div
               style={menuItemStyle}
-              onClick={() => alert("Yardım dokümantasyonu vs. buraya bağlanacak")}
+              onClick={() =>setShowModal(true)}
             >
               ❓ Yardım
             </div>
@@ -261,6 +269,7 @@ const PersonalInfoBar = ({ onLogout }) => {
     </div>
   </div>
 )}
+{showModal && <SystemInfoModal onClose={() => setShowModal(false)} />}
 
     </div>
   );
