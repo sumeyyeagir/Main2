@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import hastalar from "./hastalar";
 import Markdown from "markdown-to-jsx";
 import PersonalInfoBar2 from "../components/PersonalInfoBar2";
 import {
@@ -13,45 +12,95 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+
 const HastaGecmisPage = () => {
   const location = useLocation();
   const { tc } = location.state || { tc: null };
   const [raporlar, setRaporlar] = useState([]);
+  const [evreData, setEvreData] = useState([]);
+  const [kanData, setKanData] = useState([]);
   const [expandedIndex, setExpandedIndex] = useState(null); // 👈 hangi rapor açık?
   const [hasta, setHasta] = useState(null); 
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (tc) {
-      // Hasta bilgisi çek (ad soyad vs)
-       fetch(`http://localhost:5001/patients/${tc}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setHasta(data);
-        })
-        .catch((err) => console.error("Hasta bilgisi çekme hatası:", err));
+  if (tc) {
+    fetch(`http://localhost:5001/patients/${tc}`)
+      .then((res) => res.json())
+      .then((data) => setHasta(data))
+      .catch((err) => console.error("Hasta bilgisi çekme hatası:", err));
 
-      // Raporları çek
-      fetch(`http://localhost:5001/get_reports/${tc}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setRaporlar(data.reports || []);
-        })
-        .catch((err) => console.error("Rapor getirme hatası:", err));
-    }
-  }, [tc]);
+    fetch(`http://localhost:5001/get_reports/${tc}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const reports = data.reports || [];
+        setRaporlar(reports);
+  fetch(`http://localhost:5001/lab_values/${tc}`)
+    .then((res) => res.json())
+    .then((data) => {
+      const labValues = data.lab_values || [];
+      // Tarihe göre sıralama (eski → yeni)
+      labValues.sort((a, b) => new Date(a.tarih) - new Date(b.tarih));
+
+      // Backend verisini grafik formatına uygun hale getir
+      const formattedLabValues = labValues.map(item => ({
+        tarih: new Date(item.tarih).toLocaleString("tr-TR", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        AST: item.AST,
+        ALT: item.ALT,
+        ALP: item.ALP,
+        Protein: item.Protein,
+        "AG Oranı": item.AG_Ratio,
+        "Total Bilirubin": item.Total_Bilirubin,
+        "Direkt Bilirubin": item.Direkt_Bilirubin,
+        Albumin: item.Albumin,
+      }));
+
+      setKanData(formattedLabValues);
+    })
+    .catch((err) => console.error("Kan değerleri çekilemedi:", err));
+
+        // Evre verisini raporlardan çıkar ve sırala
+        const evreNumeric = {
+          F0: 0,
+          F1: 1,
+          F2: 2,
+          F3: 3,
+          F4: 4,
+        };
+
+        const evreItems = reports
+          .filter((r) => r.evre && evreNumeric.hasOwnProperty(r.evre))
+          .map((r) => ({
+            tarih: new Date(r.created_at).toLocaleString("tr-TR", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+          }),
+            evre: evreNumeric[r.evre],
+          }))
+          .sort((a, b) => new Date(a.tarih) - new Date(b.tarih));
+
+
+        setEvreData(evreItems);
+      })
+      .catch((err) => console.error("Rapor getirme hatası:", err));
+  }
+}, [tc]);
+
 
   const toggleExpand = (index) => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
-  const evreData = [
-    { tarih: "2023-05-01", evre: 4 },
-    { tarih: "2023-04-01", evre: 2 },
-    { tarih: "2023-03-01", evre: 3 },
-    { tarih: "2023-02-01", evre: 2 },
-    { tarih: "2023-01-01", evre: 1 },
-  ];
+
 
   const evreLabels = {
     0: "F0",
@@ -61,70 +110,7 @@ const HastaGecmisPage = () => {
     4: "F4",
   };
 
-  const evreYorum = {
-    1: "Fibrozis başlangıcı (F1) gözlemlenmiştir. Düzenli takip önerilir.",
-    2: "Orta düzey fibrozis (F2). Yaşam tarzı değişiklikleri önemlidir.",
-    3: "İleri fibrozis (F3). Tedavi planı dikkatle izlenmelidir.",
-    4: "Siroz başlangıcı (F4). Uzman takibi ve tedavi zorunludur.",
-  };
-
-  const kanData = [
-    {
-      tarih: "2023-05-01",
-      AST: 37,
-      ALT: 41,
-      ALP: 92,
-      Protein: 7.4,
-      "AG Oranı": 1.4,
-      "Total Bilirubin": 1.3,
-      "Direkt Bilirubin": 0.4,
-      Albumin: 4.3,
-    },
-    {
-      tarih: "2023-04-01",
-      AST: 36,
-      ALT: 39,
-      ALP: 88,
-      Protein: 7.1,
-      "AG Oranı": 1.2,
-      "Total Bilirubin": 1.0,
-      "Direkt Bilirubin": 0.3,
-      Albumin: 4.0,
-    },
-    {
-      tarih: "2023-03-01",
-      AST: 40,
-      ALT: 45,
-      ALP: 95,
-      Protein: 7.3,
-      "AG Oranı": 1.3,
-      "Total Bilirubin": 1.2,
-      "Direkt Bilirubin": 0.4,
-      Albumin: 4.2,
-    },
-    {
-      tarih: "2023-02-01",
-      AST: 38,
-      ALT: 42,
-      ALP: 85,
-      Protein: 7.0,
-      "AG Oranı": 1.1,
-      "Total Bilirubin": 1.0,
-      "Direkt Bilirubin": 0.2,
-      Albumin: 4.0,
-    },
-    {
-      tarih: "2023-01-01",
-      AST: 35,
-      ALT: 40,
-      ALP: 90,
-      Protein: 7.2,
-      "AG Oranı": 1.2,
-      "Total Bilirubin": 1.1,
-      "Direkt Bilirubin": 0.3,
-      Albumin: 4.1,
-    },
-  ];
+ 
 
   const renkler = {
     AST: "#1f77b4",
@@ -136,20 +122,28 @@ const HastaGecmisPage = () => {
     "Direkt Bilirubin": "#e377c2",
     Albumin: "#7f7f7f",
   };
+
   return (
     <div style={styles.page}>
-      <PersonalInfoBar2 onLogout={() => navigate("/")} />
+      <div style={styles.navbar}>
+        <h2 style={styles.navTitle}>Doktor Paneli</h2>
+      </div>
 
       <div style={styles.content}>
         <h2 style={styles.header}>Geçmiş Sonuçlar</h2>
         <h4 style={styles.subHeader}>Hasta TC: {tc || "TC bulunamadı"}</h4>
-        <h4 style={styles.subHeader}>Ad Soyad:{hasta ? `${hasta.ad} ${hasta.soyad}` : "Bilinmiyor"} </h4>
+        <h4 style={styles.subHeader}>
+          Ad Soyad: <span className="notranslate">{hasta ? `${hasta.name} ${hasta.surname}` : "Bilinmiyor"}</span>
+        </h4>
+
+
+
         <div style={styles.chartsRow}>
           <div style={styles.chartBoxSmall}>
             <h3 style={styles.chartTitle}>Evre Değişimi</h3>
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={[...evreData].reverse()}>
-                <CartesianGrid stroke="#ccc" horizontal={true} vertical={false} />
+                <CartesianGrid stroke="#ccc" horizontal vertical={false} />
                 <XAxis dataKey="tarih" />
                 <YAxis
                   type="number"
@@ -160,7 +154,8 @@ const HastaGecmisPage = () => {
                 />
                 <Tooltip
                   formatter={(value) => evreLabels[value] || value}
-                  labelFormatter={(label) => `Tarih: ${label}`}/>
+                  labelFormatter={(label) => `Tarih: ${label}`}
+                />
                 <Line
                   type="monotone"
                   dataKey="evre"
@@ -198,6 +193,7 @@ const HastaGecmisPage = () => {
             </ResponsiveContainer>
           </div>
         </div>
+
         <div style={styles.reportContainer}>
           {raporlar.length === 0 ? (
             <p>Bu hastaya ait geçmiş rapor bulunamadı.</p>
@@ -220,8 +216,12 @@ const HastaGecmisPage = () => {
 
                   {isOpen && (
                     <div style={styles.markdown}>
-                      <p><strong>Rapor:</strong> {rapor.report_name}</p>
-                      <p><strong>Tahmin:</strong></p>
+                      <p>
+                        <strong>Rapor:</strong> {rapor.report_name}
+                      </p>
+                      <p>
+                        <strong>Tahmin:</strong>
+                      </p>
                       <Markdown options={{ forceBlock: true }}>
                         {rapor.prediction_result}
                       </Markdown>
@@ -244,6 +244,16 @@ const styles = {
     minHeight: "100vh",
     width: "100vw",
     overflowX: "hidden",
+  },
+  navbar: {
+    backgroundColor: "#213448",
+    padding: "20px",
+    color: "white",
+    textAlign: "center",
+  },
+  navTitle: {
+    margin: 0,
+    fontSize: "26px",
   },
   content: {
     padding: "30px",
@@ -314,7 +324,6 @@ const styles = {
     marginBottom: 16,
     textAlign: "center",
   },
-  
   reportHeader: {
     fontSize: 22,
     color: "#213448",

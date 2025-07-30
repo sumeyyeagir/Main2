@@ -5,10 +5,11 @@ const HastaListesiPage = () => {
   const [arama, setArama] = useState("");
   const [hastalar, setHastalar] = useState([]);
   const navigate = useNavigate();
-  
-  // Veriyi fetch et
+
   useEffect(() => {
-    fetch("http://localhost:5001/patients")
+    fetch("http://localhost:5001/patients", {
+      credentials: "include",
+    })
       .then((res) => res.json())
       .then((data) => {
         setHastalar(data);

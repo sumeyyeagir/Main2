@@ -75,7 +75,6 @@ const FormPage = ({ onLogout, onFormSubmit }) => {
   const [totalBilirubin, setTotalBilirubin] = useState("");
   const [directBilirubin, setDirectBilirubin] = useState("");
   const [albumin, setAlbumin] = useState("");
-  const [platelet, setPlatelet] = useState("");
   const [agRatio, setAgRatio] = useState("");
   const [proteins, setProteins] = useState("");
 
@@ -150,7 +149,7 @@ const FormPage = ({ onLogout, onFormSubmit }) => {
         setTotalBilirubin(result.totalBilirubin || "");
         setDirectBilirubin(result.directBilirubin || "");
         setAlbumin(result.albumin || "");
-        setPlatelet(result.platelet || "");
+      
 
         // Debugging için input alanlarına yazılan değerleri kontrol et
         console.log("AST:", result.ast);
@@ -159,7 +158,6 @@ const FormPage = ({ onLogout, onFormSubmit }) => {
         console.log("Total Bilirubin:", result.totalBilirubin);
         console.log("Direct Bilirubin:", result.directBilirubin);
         console.log("Albumin:", result.albumin);
-        console.log("Platelet:", result.platelet);
       } catch (error) {
         console.error("PDF işlenemedi:", error); // Hata mesajını konsola yazdır
         alert("PDF işlenemedi: " + error.message);
@@ -179,6 +177,28 @@ const FormPage = ({ onLogout, onFormSubmit }) => {
     }
 
     setLoading(true);
+  
+    try {
+      // Kan verilerini JSON olarak backend'e gönderiyoruz, tarih otomatik
+      const labResponse = await fetch("http://localhost:5001/lab_values", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tc,
+          tarih: new Date().toISOString(),
+          AST: Number(ast) || null,
+          ALT: Number(alt) || null,
+          ALP: Number(alp) || null,
+          Protein: Number(proteins) || null,
+          AG_Ratio: Number(agRatio) || null,
+          Total_Bilirubin: Number(totalBilirubin) || null,
+          Direkt_Bilirubin: Number(directBilirubin) || null,
+          Albumin: Number(albumin) || null
+        }),
+      });
+
+      if (!labResponse.ok) throw new Error("Laboratuvar verisi kaydedilemedi.");
+
 
     const formData = new FormData();
     formData.append("Total_Bilirubin", totalBilirubin || "0");
@@ -191,14 +211,13 @@ const FormPage = ({ onLogout, onFormSubmit }) => {
     formData.append("AG_Ratio", agRatio || "0");
     formData.append("image", ultrasoundFile);
 
-    try {
-      const response = await fetch("http://localhost:5001/predict", {
+    const predictResponse = await fetch("http://localhost:5001/predict", {
         method: "POST",
         body: formData,
       });
 
-      if (!response.ok) throw new Error("Tahmin API çağrısı başarısız.");
-      const result = await response.json();
+      if (!predictResponse.ok) throw new Error("Tahmin API çağrısı başarısız.");
+      const result = await predictResponse.json();
 
       setLoading(false);
 

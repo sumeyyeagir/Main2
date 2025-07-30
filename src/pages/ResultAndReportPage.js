@@ -1,17 +1,16 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import "./ResultAndReportPage.css";
-// import html2canvas from "html2canvas";
-// import jsPDF from "jspdf";
-import html2pdf from "html2pdf.js";  // html2pdf'yi import ettik
+import html2pdf from "html2pdf.js";  
 import Chatbot from "../components/Chatbot";
-import Markdown from "markdown-to-jsx"; // en üste ekle (eğer eklenmediyse)
+import Markdown from "markdown-to-jsx"; 
 
 
 const ResultAndReportPage = () => {
   const reportRef = useRef();
   const location = useLocation();
-
+  const [reportSent, setReportSent] = useState(false);
+  const [retryCount, setRetryCount] = useState(0); // yeniden deneme sayacı
   const hastaVerisi = location.state || {};
 
   const {
@@ -61,33 +60,58 @@ const ResultAndReportPage = () => {
   };
 
   useEffect(() => {
-    if (tc && llmExplanation) {
-      fetch("http://localhost:5001/add_report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tc_no: tc,
-          report_text: llmExplanation,
-          name,
-          surname,
-          age,
-          gender,
-          evre: imagePrediction,
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            console.log("Rapor başarıyla kaydedildi.");
-          } else {
-            console.error("Rapor kaydedilirken hata:", data.message);
-          }
-        })
-        .catch((err) => {
-          console.error("Rapor kaydetme hatası:", err);
+    const controller = new AbortController();
+
+    const sendReport = async () => {
+      if (!tc || !llmExplanation || reportSent || retryCount > 3) return;
+
+      try {
+        const response = await fetch("http://localhost:5001/add_report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            tc_no: tc,
+            report_text: llmExplanation,
+            name,
+            surname,
+            age,
+            gender,
+            evre: imagePrediction,
+          }),
+          signal: controller.signal,
         });
-    }
-  }, [tc, llmExplanation]);
+
+        const data = await response.json();
+
+        if (data.success) {
+          console.log("✅ Rapor başarıyla kaydedildi.");
+          setReportSent(true);
+        } else {
+          console.error("❌ Rapor kaydedilirken hata:", data.message);
+          setRetryCount((prev) => prev + 1);
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("⛔ Rapor gönderme hatası:", err);
+          setRetryCount((prev) => prev + 1);
+        }
+      }
+    };
+    sendReport();
+
+    return () => controller.abort();
+  }, [
+    tc,
+    llmExplanation,
+    imagePrediction,
+    name,
+    surname,
+    age,
+    gender,
+    reportSent,
+    retryCount,
+  ]);
 
   return (
     <div className="report-page">

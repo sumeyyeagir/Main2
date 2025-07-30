@@ -62,6 +62,26 @@ const PersonalInfoBar2 = ({ onLogout }) => {
   // Determine if it's a small screen
   const isSmallScreen = windowWidth <= 768; // You can adjust this breakpoint
 
+  const handleLogout = () => {
+    fetch("http://localhost:5001/logout", {
+      method: "POST",
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          localStorage.removeItem("isLoggedIn");
+          localStorage.removeItem("userName");
+          setMenuOpen(false);
+          onLogout();  // App.js'deki state'i güncelle
+          navigate("/login");
+        } else {
+          alert("Çıkış yapılamadı, tekrar deneyin.");
+        }
+      })
+      .catch(() => alert("Sunucu hatası, çıkış yapılamadı."));
+  };
+
   return (
     <div
       style={{
@@ -190,7 +210,7 @@ const PersonalInfoBar2 = ({ onLogout }) => {
             <div
               style={{ ...menuItemStyle, color: "#c0392b", fontWeight: "bold" }}
               onClick={() => {
-                setMenuOpen(false); // Close menu after click
+                setMenuOpen(false); 
                 localStorage.removeItem("userName");
                 onLogout();
               }}

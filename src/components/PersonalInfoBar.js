@@ -39,6 +39,26 @@ const PersonalInfoBar = ({ onLogout }) => {
     }
   };
 
+  const handleLogout = () => {
+    fetch("http://localhost:5001/logout", {
+      method: "POST",
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          localStorage.removeItem("isLoggedIn");
+          localStorage.removeItem("userName");
+          setMenuOpen(false);
+          onLogout();  // App.js'deki state'i güncelle
+          navigate("/login");
+        } else {
+          alert("Çıkış yapılamadı, tekrar deneyin.");
+        }
+      })
+      .catch(() => alert("Sunucu hatası, çıkış yapılamadı."));
+  };
+
   return (
     <div
       style={{

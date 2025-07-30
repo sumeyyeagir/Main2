@@ -8,37 +8,33 @@ const LoginPage = ({ onLogin }) => {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
 
-  const users = [
-    { username: "erva.ergul", password: "123456" },
-    { username: "busra.inan", password: "123456" },
-    { username: "ege.kuzu", password: "123456" },
-    { username: "kevser.semiz", password: "123456" },
-    { username: "helin.ozalkan", password: "123456" },
-    { username: "sumeyye.agir", password: "123456" },
-    { username: "efe.kesler", password: "123456" },
-    { username: "devran.sahin", password: "123456" },
-    { username: "cengizhan.karaman", password: "123456" },
-    { username: "enes.coban", password: "123456" },
-    { username: "kerem.guney", password: "123456" },
-  ];
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
-      setError("Lütfen kullanıcı adı ve şifreyi boş bırakmayınız.");
+      setError("Lütfen kullanıcı adı ve şifreyi giriniz.");
       return;
     }
-  
-    const foundUser = users.find(
-      (user) => user.username === username && user.password === password
-    );
-  
-    if (foundUser) {
-      setError("");
-      localStorage.setItem("userName", username); 
-      onLogin(); 
-      navigate("/"); 
-    } else {
-      setError("Kullanıcı adı veya şifre yanlış.");
+
+    try {
+      const response = await fetch("http://localhost:5001/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",   // << bu satır eksik senin kodunda
+        body: JSON.stringify({ username, password }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setError("");
+        localStorage.setItem("userName", username);
+        onLogin(); // Üst component'e haber ver
+        navigate("/");
+      } else {
+        setError(result.message || "Giriş başarısız.");
+      }
+    } catch (error) {
+      setError("Sunucuya bağlanılamadı.");
     }
   };
   

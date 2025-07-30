@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import hastalar from "./hastalar";
 import PersonalInfoBar2 from "../components/PersonalInfoBar2";
 
 const EvreDetayPage = () => {
@@ -10,7 +9,9 @@ const EvreDetayPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:5001/patients")
+    fetch("http://localhost:5001/patients",{
+      credentials: "include",  
+    })
       .then((res) => res.json())
       .then((data) => setHastalar(data))
       .catch((err) => console.error("Veri çekme hatası:", err));

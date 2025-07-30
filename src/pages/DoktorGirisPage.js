@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip, LabelList } from "recharts";
 import { useNavigate, useLocation } from "react-router-dom";
-
-import hastalar from "./hastalar";
 import PersonalInfoBar2 from "../components/PersonalInfoBar2";
 
 const DoktorGirisPage = () => {
@@ -17,26 +15,20 @@ const DoktorGirisPage = () => {
   const location = useLocation();
 
 useEffect(() => {
-    fetch("http://localhost:5001/patients")
-      .then((res) => res.json())
-      .then((data) => {
-        setHastalar(data);
+    fetch("http://localhost:5001/patients",{credentials: "include",})
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setHastalar(data);
+        } else {
+          setHastalar([]);
+          console.error("Beklenmeyen data formatı:", data);
+        }
       })
-      .catch((error) => {
-        console.error("Hasta verileri alınamadı:", error);
-      });
+      .catch(err => console.error(err));
+
   }, []);
 
-useEffect(() => {
-    fetch("http://localhost:5001/patients")
-      .then((res) => res.json())
-      .then((data) => {
-        setHastalar(data);
-      })
-      .catch((error) => {
-        console.error("Hasta verileri alınamadı:", error);
-      });
-  }, []);
 
   useEffect(() => {
     if (location.state?.yeniNot) {
@@ -48,7 +40,6 @@ useEffect(() => {
     }
   }, [location.state]);
 
-
   const handleSearch = () => {
     const hasta = hastalar.find((h) => h.tc === tc.trim());
 
@@ -56,7 +47,7 @@ useEffect(() => {
       navigate("/hasta-gecmis", {
         state: {
           tc: hasta.tc,
-          adSoyad: hasta.ad,
+          adSoyad: `${hasta.ad} ${hasta.soyad}`,
         },
       });
     } else {
@@ -75,7 +66,6 @@ useEffect(() => {
     .filter((item) => item.value > 0);
 
   const total = rawData.reduce((sum, item) => sum + item.value, 0);
-
   const data = rawData.map((item) => ({
     ...item,
     percent: total === 0 ? 0 : ((item.value / total) * 100).toFixed(1),
