@@ -205,7 +205,7 @@ const PersonalInfoBar2 = ({ onLogout }) => {
               style={menuItemStyle}
               onClick={() =>setShowModal(true)}
             >
-              ❓ Yardım
+           ❓ Yardım
             </div>
             <div
               style={{ ...menuItemStyle, color: "#c0392b", fontWeight: "bold" }}
@@ -213,6 +213,7 @@ const PersonalInfoBar2 = ({ onLogout }) => {
                 setMenuOpen(false); 
                 localStorage.removeItem("userName");
                 onLogout();
+                navigate("/login");
               }}
             >
               <FiLogOut style={{ marginRight: "6px" }} />
