@@ -1,12 +1,42 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 const LoginPage = ({ onLogin }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
+
+  const handleRegister = async () => {
+    if (!username || !password) {
+      setError("Lütfen kullanıcı adı ve şifreyi giriniz.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5001/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // Cookie veya oturum bilgisi gerekiyorsa
+        body: JSON.stringify({ username, password }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setError("");
+        localStorage.setItem("userName", username);
+        onLogin(); // Kayıt sonrası login sayılırsa
+        navigate("/");
+      } else {
+        setError(result.message || "Kayıt başarısız.");
+      }
+    } catch (error) {
+      setError("Sunucuya bağlanılamadı.");
+    }
+  };
 
 
   const handleLogin = async () => {
@@ -69,13 +99,19 @@ const LoginPage = ({ onLogin }) => {
   style={styles.input}
 />
 
-        {error && <div style={styles.errorText}>{error}</div>}
+{error && <div style={styles.errorText}>{error}</div>}
 
-        <button onClick={handleLogin} style={styles.button}>
-          Giriş Yap
-        </button>
+<div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+  <button onClick={handleLogin} style={styles.button}>
+    Giriş Yap
+  </button>
+  <button onClick={handleRegister} style={styles.button}>
+    Kayıt Ol
+  </button>
+</div>
 
-        <small style={styles.footerText}>© 2025 Fibrozis Tahmin Sistemi</small>
+<small style={styles.footerText}>© 2025 Fibrozis Tahmin Sistemi</small>
+
       </div>
     </div>
   );

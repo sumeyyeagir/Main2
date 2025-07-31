@@ -41,7 +41,7 @@ const EvreDetayPage = () => {
               <tbody>
                 {filtreliListe.map((h, i) => (
                   <tr key={i} style={i % 2 === 0 ? styles.trEven : styles.trOdd}>
-                    <td style={styles.td}>{`${h.ad} ${h.soyad}`}</td>
+                    <td style={styles.td}className="notranslate" translate="no">{`${h.ad} ${h.soyad}`}</td>
                     <td style={styles.td}>{h.tc}</td>
                     <td style={styles.td}>2025-07-25</td> {/* Sabit tarih */}
                   </tr>

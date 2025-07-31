@@ -11,12 +11,12 @@ import os
 import pdfplumber
 import sqlite3
 # Model paths
-RF_MODEL_PATH = r"C:\Users\sumey\Desktop\Main\rf_model.pkl"
-SCALER_PATH = r"C:\Users\sumey\Desktop\Main\scaler.pkl"
-CNN_MODEL_PATH = r"C:\Users\sumey\Desktop\Main\cnn_model.h5"
+RF_MODEL_PATH = "/Users/cengizhankaraman/Desktop/SON PROJE/Main2/rf_model.pkl"
+SCALER_PATH = "/Users/cengizhankaraman/Desktop/SON PROJE/Main2/scaler.pkl"
+CNN_MODEL_PATH = "/Users/cengizhankaraman/Desktop/SON PROJE/Main2/cnn_model.h5"
 
-API_KEY = "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"
-API_KEY2 = "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"
+API_KEY = "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"
+API_KEY2 = "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"
 
 class_labels = ['F0', 'F1', 'F2', 'F3', 'F4']
 
@@ -631,6 +631,67 @@ def get_current_user():
         return jsonify({"user_id": user_id})
     else:
         return jsonify({"message": "Giriş yapılmamış."}), 401
+
+@app.route("/check-password", methods=["POST"])
+def check_password():
+    user_id = session.get("user_id")
+    print(user_id)
+    if not user_id:
+        return jsonify({"success": False, "message": "Giriş yapılmamış."}), 401
+
+    data = request.get_json()
+    password = data.get("password")
+
+    if not password:
+        return jsonify({"success": False, "message": "Şifre gerekli."}), 400
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        # sadece giriş yapmış kişinin şifresi kontrol ediliyor
+        cursor.execute("SELECT password FROM users WHERE id = ?", (user_id,))
+        row = cursor.fetchone()
+        conn.close()
+
+        if row and row[0] == password:
+            return jsonify({"success": True}), 200
+        else:
+            return jsonify({"success": False, "message": "Şifre hatalı."}), 401
+
+    except Exception as e:
+        print("DB error:", e)
+        return jsonify({"success": False, "message": "Sunucu hatası."}), 500
+
+@app.route("/register", methods=["POST"])
+def register():
+    try:
+        data = request.get_json()
+        username = data.get("username")
+        password = data.get("password")
+
+        if not username or not password:
+            return jsonify({"success": False, "message": "Kullanıcı adı veya şifre boş."}), 400
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+        if cursor.fetchone():
+            conn.close()
+            return jsonify({"success": False, "message": "Bu kullanıcı adı zaten kullanılıyor."}), 409
+
+        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+        user_id = cursor.lastrowid  # Eklenen kullanıcının ID'si
+        conn.commit()
+        conn.close()
+
+        session["user_id"] = user_id  # Otomatik giriş işlemi
+
+        return jsonify({"success": True, "message": "Kayıt başarılı. Giriş yapıldı."})
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+    
 @app.route("/login", methods=["POST"])
 def login():
     try:

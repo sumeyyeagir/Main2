@@ -138,7 +138,7 @@ useEffect(() => {
       <div style={styles.gridTop}>
         <div style={styles.squareCard}>
           <div style={styles.centeredContent}>
-            <div style={styles.sayac}>{hastalar}</div>
+            <div style={styles.sayac}className="notranslate" translate="no">{hastalar.length}</div>
             <h3 style={{ ...styles.centeredTitle, marginTop: "10px" }}>
               Kayıtlı Hasta
             </h3>

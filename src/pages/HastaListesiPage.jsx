@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import PersonalInfoBar2 from "../components/PersonalInfoBar2";
+
 const HastaListesiPage = () => {
   const [arama, setArama] = useState("");
   const [hastalar, setHastalar] = useState([]);
@@ -29,13 +30,17 @@ const HastaListesiPage = () => {
       <PersonalInfoBar2 onLogout={() => navigate("/")} />
 
       <div style={styles.content}>
-        <h2 style={styles.header}>Toplam Hasta Listesi</h2>
+        <h2 style={styles.header}>
+          Toplam Hasta Listesi
+        </h2>
 
         <input
           type="text"
           placeholder="Ad Soyad'a göre ara..."
           value={arama}
           onChange={(e) => setArama(e.target.value)}
+          className="notranslate"
+          translate="no"
           style={styles.searchInput}
         />
 
@@ -55,14 +60,20 @@ const HastaListesiPage = () => {
                     key={index}
                     style={index % 2 === 0 ? styles.trEven : styles.trOdd}
                   >
-                    <td style={styles.td}>{`${hasta.ad} ${hasta.soyad}`}</td>
-                    <td style={styles.td}>{hasta.tc}</td>
-                    <td style={styles.td}>{hasta.evre}</td>
+                    <td style={styles.td} className="notranslate" translate="no">
+                      {`${hasta.ad} ${hasta.soyad}`}
+                    </td>
+                    <td style={styles.td} className="notranslate" translate="no">
+                      {hasta.tc}
+                    </td>
+                    <td style={styles.td} className="notranslate" translate="no">
+                      {hasta.evre}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="3" style={styles.td}>
+                  <td colSpan="3" style={styles.td} className="notranslate" translate="no">
                     Eşleşen hasta bulunamadı.
                   </td>
                 </tr>

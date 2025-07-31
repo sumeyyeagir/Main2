@@ -14,6 +14,9 @@
     <title>Fibrozis Tahmin ve Değerlendirme Raporu</title>
 
     <style>
+      .notranslate {
+        translate: no;
+      }
       /* Google Translate banner iframe gizle */
       .goog-te-banner-frame.skiptranslate {
         display: none !important;
@@ -39,22 +42,7 @@
         display: none !important;
       }
 
-      /* Tek toggle butonu */
-      #translate-toggle-btn {
-        position: fixed;
-        top: 23px;
-        right: 220px;
-        z-index: 9999;
-        background-color: #213448;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-      }
-
-      /* Google Translate widget kutusu */
+      /* Google Translate widget kutusu (gizli) */
       #google_translate_element {
         display: none;
         position: fixed;
@@ -71,10 +59,7 @@
     </style>
   </head>
   <body>
-    <!-- Tek toggle butonu -->
-    <button id="translate-toggle-btn" onclick="toggleLanguage()">English</button>
-
-    <!-- Google Translate widget container -->
+    <!-- Google Translate widget container (gizli) -->
     <div id="google_translate_element"></div>
 
     <script type="text/javascript">
@@ -85,66 +70,6 @@
         if (parts.length === 2) return parts.pop().split(";").shift();
         return null;
       }
-
-      // Dili toggle eden fonksiyon
-      function toggleLanguage() {
-        const currentLang = getCookie("googtrans") || "/tr/tr";
-
-        if (currentLang === "/tr/en") {
-          // Şu an İngilizce, Türkçeye dön
-          setLanguage("tr");
-        } else {
-          // Şu an Türkçe ya da başka, İngilizceye çevir
-          setLanguage("en");
-        }
-      }
-
-      // Cookie ayarla ve sayfayı yenile
-      function setLanguage(lang) {
-        var domain = location.hostname;
-        var cookieValue = "/tr/" + lang;
-        document.cookie = "googtrans=" + cookieValue + ";path=/;domain=" + domain + ";expires=Fri, 31 Dec 9999 23:59:59 GMT";
-
-        // Buton metnini güncelle
-        const btn = document.getElementById("translate-toggle-btn");
-        btn.textContent = lang === "en" ? "Türkçe" : "English";
-
-        location.reload();
-      }
-
-      // Sayfa yüklendiğinde buton metnini doğru ayarla
-      window.onload = function () {
-        // Banner iframe gizle
-        const banner = document.querySelector('.goog-te-banner-frame.skiptranslate');
-        if (banner) banner.style.display = 'none';
-
-        // Tooltip ve balon gizle
-        const tooltip = document.getElementById('goog-gt-tt');
-        if (tooltip) tooltip.style.display = 'none';
-
-        const balloon = document.querySelector('.goog-te-balloon-frame');
-        if (balloon) balloon.style.display = 'none';
-
-        // Body ve html üst boşluk, margin, padding sıfırla
-        document.body.style.top = '0px';
-        document.body.style.position = 'static';
-        document.body.style.marginTop = '0px';
-        document.body.style.paddingTop = '0px';
-
-        document.documentElement.style.top = '0px';
-        document.documentElement.style.position = 'static';
-        document.documentElement.style.marginTop = '0px';
-        document.documentElement.style.paddingTop = '0px';
-
-        // Google translate tarafından eklenen ekstra div gizle
-        const skipTranslateDiv = document.querySelector('body > .skiptranslate');
-        if (skipTranslateDiv) skipTranslateDiv.style.display = 'none';
-
-        // Buton metnini güncelle
-        const currentLang = getCookie("googtrans") || "/tr/tr";
-        const btn = document.getElementById("translate-toggle-btn");
-        btn.textContent = currentLang === "/tr/en" ? "Türkçe" : "English";
-      };
 
       // Google Translate elementi başlatma
       function googleTranslateElementInit() {

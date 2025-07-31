@@ -41,23 +41,7 @@ const PersonalInfoBar2 = ({ onLogout }) => {
 
   const firstLetter = userName?.charAt(0).toUpperCase();
 
-  const handleCheckPassword = () => {
-    if (password === "1234") {
-      setPasswordPopup(false);
-      setPassword("");
-      setError("");
-      // Corrected logic: user needs to be redirected to /doktor-giris after successful password check
-      // However, it seems the current context is already DoktorGirisPage.
-      // If this popup is for an *action* within DoktorGirisPage, you might not navigate away.
-      // If it's for *entering* DoktorGirisPage from a different page, then this navigation is correct.
-      // Assuming it's for an internal action, removing navigate for now.
-      // If it's intended to navigate *back* to DoktorGirisPage after a password check from somewhere else, keep it.
-      // For this component, it's likely part of the main app flow, so we'll keep it as a placeholder.
-      navigate("/doktor-giris"); // Keeping original navigation for consistency with the provided code
-    } else {
-      setError("Şifre hatalı. Lütfen tekrar deneyin.");
-    }
-  };
+  
 
   // Determine if it's a small screen
   const isSmallScreen = windowWidth <= 768; // You can adjust this breakpoint
@@ -320,7 +304,7 @@ const PersonalInfoBar2 = ({ onLogout }) => {
             )}
             <div style={{ marginTop: "20px", display: "flex", justifyContent: "flex-end" }}>
               <button
-                onClick={handleCheckPassword}
+                
                 style={{
                   padding: "8px 16px",
                   borderRadius: "5px",
