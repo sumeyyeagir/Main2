@@ -31,31 +31,27 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        {!isLoggedIn ? (
-          <>
-            {/* Giriş yapılmadıysa her yol login'e yönlendirilir */}
-            <Route path="*" element={<Navigate to="/login" />} />
-            <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-          </>
-        ) : (
-          <>
-            {/* Giriş yapıldıysa bu sayfalar erişilebilir */}
-            <Route path="/" element={<FormPage onLogout={handleLogout} />} />
-            <Route path="/result" element={<ResultPage />} />
-            <Route path="/doktor-giris" element={<DoktorGirisPage />} />
-            <Route path="/hasta-listesi" element={<HastaListesiPage />} /> {/* ✅ Yeni rota */}
-            <Route path="/hasta-gecmis" element={<HastaGecmisPage />} />
-            <Route path="/not-ekle" element={<NotEklePage />} />
-            <Route path="/not-detay" element={<NotDetayPage />} />
-<Route path="/evre-detay" element={<EvreDetayPage />} />
+  <Routes>
+    <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
 
-            {/* Bilinmeyen yollar anasayfaya yönlendirilir */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </>
-        )}
-      </Routes>
-    </BrowserRouter>
+    {!isLoggedIn ? (
+      // Giriş yapılmadıysa her yolu login'e yönlendir
+      <Route path="*" element={<Navigate to="/login" />} />
+    ) : (
+      <>
+        <Route path="/" element={<FormPage onLogout={handleLogout} />} />
+        <Route path="/result" element={<ResultPage />} />
+        <Route path="/doktor-giris" element={<DoktorGirisPage />} />
+        <Route path="/hasta-listesi" element={<HastaListesiPage />} />
+        <Route path="/hasta-gecmis" element={<HastaGecmisPage />} />
+        <Route path="/not-ekle" element={<NotEklePage />} />
+        <Route path="/not-detay" element={<NotDetayPage />} />
+        <Route path="/evre-detay" element={<EvreDetayPage />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </>
+    )}
+  </Routes>
+</BrowserRouter>
   );
 }
 
