@@ -30,6 +30,7 @@ const PersonalInfoBar = ({ onLogout }) => {
     setLangButtonLabel(currentLang === "/tr/en" ? "Türkçe" : "English");
   }, []);
 
+  
   const getCookie = (name) => {
     const value = "; " + document.cookie;
     const parts = value.split("; " + name + "=");
@@ -242,12 +243,14 @@ const PersonalInfoBar = ({ onLogout }) => {
         >
           <div
             style={{
-              backgroundColor: "white",
-              padding: "30px",
-              borderRadius: "10px",
-              width: "300px",
-              position: "relative",
-            }}
+        backgroundColor: "white",
+        padding: "30px 30px 20px 30px",
+        borderRadius: "10px",
+        boxShadow: "0px 4px 12px rgba(0,0,0,0.2)",
+        width: "300px",
+        textAlign: "center",
+        position: "relative", // çarpı için gerekli
+      }}
           >
             <button
               onClick={() => {
@@ -256,16 +259,18 @@ const PersonalInfoBar = ({ onLogout }) => {
                 setError("");
               }}
               style={{
-                position: "absolute",
-                top: "10px",
-                right: "10px",
-                background: "transparent",
-                border: "none",
-                fontSize: "18px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                color: "#213448",
-              }}
+          position: "absolute",
+          top: "10px",
+          right: "10px",
+          background: "transparent",
+          border: "none",
+          fontSize: "18px",
+          cursor: "pointer",
+          fontWeight: "bold",
+          color: "#213448",
+          lineHeight: 1,
+        }}
+        aria-label="Kapat"
             >
               ×
             </button>
@@ -277,14 +282,25 @@ const PersonalInfoBar = ({ onLogout }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCheckPassword()}
-              style={{
-                width: "100%",
-                padding: "10px",
-                borderRadius: "8px",
-                border: "1.5px solid #ccc",
-                fontSize: "16px",
-                outline: "none",
-              }}
+              tyle={{
+    width: "100%",
+    padding: "10px 4px",
+    borderRadius: "8px",
+    border: "1.5px solid #ccc",
+    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+    fontSize: "16px",
+    fontWeight: "500",
+    outline: "none",
+    transition: "border-color 0.3s ease, box-shadow 0.3s ease",
+  }}
+  onFocus={(e) => {
+    e.target.style.borderColor = "#213448";
+    e.target.style.boxShadow = "0 0 8px rgba(33, 52, 72, 0.6)";
+  }}
+  onBlur={(e) => {
+    e.target.style.borderColor = "#ccc";
+    e.target.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.1)";
+  }}
             />
             {error && <div style={{ color: "red", marginTop: "8px" }}>{error}</div>}
             <div style={{ marginTop: "20px", textAlign: "right" }}>
